@@ -10,6 +10,7 @@ use App\Models\Campus;
 use App\Models\Ministry;
 use App\Models\User;
 use App\Rules\IndonesianPhone;
+use App\Rules\LoginIdentifier;
 use App\Services\AuditLogger;
 use App\Services\WhatsApp;
 use Illuminate\Http\RedirectResponse;
@@ -56,7 +57,7 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'nickname' => ['nullable', 'string', 'max:50'],
-            'email' => ['required', 'email', 'max:190', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['required', 'string', 'max:190', new LoginIdentifier, Rule::unique('users', 'email')->ignore($user->id)],
             'whatsapp' => ['nullable', 'string', new IndonesianPhone],
             'account_status' => ['required', Rule::enum(AccountStatus::class)],
             'campuses' => ['array'],

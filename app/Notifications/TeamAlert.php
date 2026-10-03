@@ -26,7 +26,10 @@ class TeamAlert extends Notification implements ShouldQueue
     /** @return list<string> */
     public function via(object $notifiable): array
     {
-        return $this->sendMail && filled($notifiable->email ?? null) ? ['database', 'mail'] : ['database'];
+        // Accounts may sign in with a plain username (e.g. "admin"); only real addresses get e-mail.
+        $hasMailbox = filter_var($notifiable->email ?? null, FILTER_VALIDATE_EMAIL) !== false;
+
+        return $this->sendMail && $hasMailbox ? ['database', 'mail'] : ['database'];
     }
 
     public function toMail(object $notifiable): MailMessage

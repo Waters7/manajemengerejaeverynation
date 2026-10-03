@@ -15,7 +15,7 @@
             <div class="grid gap-5 sm:grid-cols-2">
                 <x-form.input name="name" label="Nama Lengkap" :value="$user->name" required />
                 <x-form.input name="nickname" label="Nama Panggilan" :value="$user->nickname" required />
-                <x-form.input name="email" type="email" label="Email" :value="$user->email" required />
+                <x-form.input name="email" label="Email / Username" :value="$user->email" required />
                 <x-form.input name="whatsapp" type="tel" label="WhatsApp" :value="\App\Services\WhatsApp::display($user->whatsapp)" required />
                 <x-form.select name="gender" label="Jenis Kelamin" :options="$genders" :value="$profile->gender" placeholder="—" />
                 <x-form.input name="birth_date" type="date" label="Tanggal Lahir" :value="$profile->birth_date" />

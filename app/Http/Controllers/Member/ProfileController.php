@@ -43,7 +43,7 @@ class ProfileController extends Controller
             $profile->update([
                 'full_name' => $data['name'],
                 'nickname' => $data['nickname'],
-                'email' => $data['email'],
+                'email' => filter_var($data['email'], FILTER_VALIDATE_EMAIL) ? $data['email'] : $profile->email,
                 'whatsapp' => WhatsApp::normalize($data['whatsapp']),
                 'gender' => $data['gender'] ?? null,
                 'birth_date' => $data['birth_date'] ?? null,

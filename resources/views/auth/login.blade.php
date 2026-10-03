@@ -1,7 +1,7 @@
 <x-layouts.auth title="Login" heading="Welcome back" subheading="Masuk untuk melihat journey, LifeGroup, kelas, dan pelayananmu.">
     <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
         @csrf
-        <x-form.input name="email" type="email" label="Email" required autofocus autocomplete="email" />
+        <x-form.input name="email" label="Email / Username" required autofocus autocomplete="username" />
         <div>
             <x-form.input name="password" type="password" label="Password" required autocomplete="current-password" />
             <div class="mt-2 flex items-center justify-between">

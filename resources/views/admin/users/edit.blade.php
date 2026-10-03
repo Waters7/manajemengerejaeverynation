@@ -10,7 +10,7 @@
             <div class="grid gap-5 sm:grid-cols-2">
                 <x-form.input name="name" label="Name" :value="$account->name" required />
                 <x-form.input name="nickname" label="Nickname" :value="$account->nickname" />
-                <x-form.input name="email" type="email" label="Email" :value="$account->email" required />
+                <x-form.input name="email" label="Email / Username" :value="$account->email" required />
                 <x-form.input name="whatsapp" label="WhatsApp" :value="\App\Services\WhatsApp::display($account->whatsapp)" />
                 <x-form.select name="account_status" label="Account status" :options="$statuses" :value="$account->account_status" required />
             </div>

@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
         $admin->profile()->firstOrCreate([], [
             'full_name' => $admin->name,
             'nickname' => $admin->nickname,
-            'email' => $admin->email,
+            'email' => filter_var($admin->email, FILTER_VALIDATE_EMAIL) ? $admin->email : null,
             'member_status' => MemberStatus::Member,
         ]);
     }

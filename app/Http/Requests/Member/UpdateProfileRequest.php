@@ -5,6 +5,7 @@ namespace App\Http\Requests\Member;
 use App\Enums\Gender;
 use App\Enums\LifeStage;
 use App\Rules\IndonesianPhone;
+use App\Rules\LoginIdentifier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:120'],
             'nickname' => ['required', 'string', 'max:50'],
-            'email' => ['required', 'email', 'max:190', Rule::unique('users', 'email')->ignore($this->user()->id)],
+            'email' => ['required', 'string', 'max:190', new LoginIdentifier, Rule::unique('users', 'email')->ignore($this->user()->id)],
             'whatsapp' => ['required', 'string', new IndonesianPhone],
             'gender' => ['nullable', Rule::enum(Gender::class)],
             'birth_date' => ['nullable', 'date', 'before:today'],

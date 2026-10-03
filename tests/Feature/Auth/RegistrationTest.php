@@ -67,6 +67,24 @@ class RegistrationTest extends TestCase
         $this->assertSame(AccountStatus::PendingVerification, $user->account_status);
     }
 
+    public function test_account_with_a_username_can_sign_in(): void
+    {
+        $user = User::factory()->create(['email' => 'admin']);
+
+        $this->post(route('login.store'), ['email' => 'admin', 'password' => 'password'])
+            ->assertRedirect(route('member.dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_login_rejects_an_identifier_with_invalid_characters(): void
+    {
+        $this->post(route('login.store'), ['email' => 'ad min!', 'password' => 'password'])
+            ->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
     public function test_inactive_account_cannot_sign_in(): void
     {
         $user = User::factory()->create(['account_status' => AccountStatus::Inactive]);
