@@ -1,9 +1,244 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/forms';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../../app/**/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+
+    /* Every Nation brand */
+    --color-brand: #0067b9;
+    --color-brand-50: #edf6fc;
+    --color-brand-100: #d6eaf8;
+    --color-brand-200: #a9d2f0;
+    --color-brand-300: #6fb2e3;
+    --color-brand-400: #2f8ad0;
+    --color-brand-500: #0067b9;
+    --color-brand-600: #005aa3;
+    --color-brand-700: #004a86;
+    --color-brand-800: #003a69;
+    --color-brand-900: #062a4c;
+
+    --color-ink: #111827;
+    --color-canvas: #f8fafc;
+    --color-soft: #edf6fc;
+    --color-line: #e5e7eb;
+    --color-muted: #64748b;
+    --color-success: #16a34a;
+    --color-warning: #f59e0b;
+    --color-danger: #dc2626;
+
+    --radius-card: 1.25rem;
+    --shadow-soft: 0 1px 2px rgb(17 24 39 / 0.04), 0 8px 24px -12px rgb(17 24 39 / 0.12);
+    --shadow-lift: 0 2px 4px rgb(17 24 39 / 0.04), 0 18px 40px -18px rgb(0 103 185 / 0.35);
+}
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-canvas text-ink;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    ::selection {
+        @apply bg-brand text-white;
+    }
+}
+
+@layer components {
+    /* Typography */
+    .eyebrow {
+        @apply text-xs font-bold tracking-[0.2em] text-brand uppercase;
+    }
+    .display {
+        @apply text-4xl leading-[1.02] font-extrabold tracking-tight uppercase sm:text-5xl lg:text-6xl;
+    }
+    .heading {
+        @apply text-3xl leading-tight font-extrabold tracking-tight uppercase sm:text-4xl;
+    }
+    .prose-church {
+        @apply text-[1.0625rem] leading-relaxed text-slate-700;
+    }
+    .prose-church p {
+        @apply mb-4;
+    }
+    .prose-church h2,
+    .prose-church h3 {
+        @apply mt-8 mb-3 font-extrabold text-ink;
+    }
+    .prose-church ul {
+        @apply mb-4 list-disc pl-6;
+    }
+    .prose-church ol {
+        @apply mb-4 list-decimal pl-6;
+    }
+    .prose-church a {
+        @apply text-brand underline underline-offset-2;
+    }
+    .prose-church blockquote {
+        @apply my-6 border-l-4 border-brand pl-4 text-slate-600 italic;
+    }
+
+    /* Buttons */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold tracking-wide whitespace-nowrap transition focus-visible:ring-4 focus-visible:ring-brand/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60;
+    }
+    .btn-lg {
+        @apply px-7 py-3.5 text-[0.9375rem];
+    }
+    .btn-sm {
+        @apply px-3.5 py-1.5 text-xs;
+    }
+    .btn-primary {
+        @apply bg-brand text-white shadow-sm hover:bg-brand-600 active:bg-brand-700;
+    }
+    .btn-dark {
+        @apply bg-ink text-white hover:bg-slate-800;
+    }
+    .btn-white {
+        @apply bg-white text-ink hover:bg-brand-50;
+    }
+    .btn-outline {
+        @apply border border-line bg-white text-ink hover:border-brand/40 hover:text-brand;
+    }
+    .btn-outline-white {
+        @apply border border-white/50 text-white hover:border-white hover:bg-white/10;
+    }
+    .btn-ghost {
+        @apply text-slate-600 hover:bg-slate-100 hover:text-ink;
+    }
+    .btn-danger {
+        @apply bg-danger text-white hover:bg-red-700;
+    }
+    .btn-success {
+        @apply bg-success text-white hover:bg-green-700;
+    }
+    .btn-whatsapp {
+        @apply bg-[#25D366] text-white hover:bg-[#1ebe5b];
+    }
+
+    /* Surfaces */
+    .card {
+        @apply rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-soft)];
+    }
+    .card-pad {
+        @apply p-5 sm:p-6;
+    }
+    .card-hover {
+        @apply transition duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)];
+    }
+
+    /* Forms */
+    .label {
+        @apply mb-1.5 block text-sm font-semibold text-ink;
+    }
+    .input {
+        @apply block w-full rounded-xl border-line bg-white px-3.5 py-2.5 text-sm text-ink shadow-xs placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15;
+    }
+    .input-error {
+        @apply border-danger focus:border-danger focus:ring-danger/15;
+    }
+    .hint {
+        @apply mt-1.5 text-xs text-muted;
+    }
+    .error {
+        @apply mt-1.5 text-xs font-medium text-danger;
+    }
+    .checkbox {
+        @apply size-4 rounded border-slate-300 text-brand focus:ring-brand/30;
+    }
+
+    /* Choice cards (checkbox / radio as tiles) */
+    .choice {
+        @apply relative flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-white p-4 text-sm font-semibold transition hover:border-brand/40;
+    }
+    .choice:has(input:checked) {
+        @apply border-brand bg-brand-50 text-brand-800 ring-2 ring-brand/20;
+    }
+    .chip {
+        @apply inline-flex cursor-pointer items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand/40;
+    }
+    .chip:has(input:checked) {
+        @apply border-brand bg-brand text-white;
+    }
+
+    /* Tables */
+    .table {
+        @apply w-full text-left text-sm;
+    }
+    .table thead th {
+        @apply border-b border-line bg-slate-50/80 px-4 py-3 text-xs font-bold tracking-wider whitespace-nowrap text-muted uppercase;
+    }
+    .table tbody td {
+        @apply border-b border-line/70 px-4 py-3 align-middle;
+    }
+    .table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+    .table tbody tr {
+        @apply transition hover:bg-brand-50/40;
+    }
+
+    /* Badges */
+    .badge {
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold tracking-wide whitespace-nowrap uppercase;
+    }
+    .badge-gray {
+        @apply bg-slate-100 text-slate-600;
+    }
+    .badge-blue {
+        @apply bg-brand-50 text-brand-700;
+    }
+    .badge-indigo {
+        @apply bg-indigo-50 text-indigo-700;
+    }
+    .badge-green {
+        @apply bg-green-50 text-green-700;
+    }
+    .badge-amber {
+        @apply bg-amber-50 text-amber-700;
+    }
+    .badge-red {
+        @apply bg-red-50 text-red-700;
+    }
+
+    /* Admin navigation */
+    .nav-section {
+        @apply mt-6 mb-2 px-3 text-[0.65rem] font-bold tracking-[0.18em] text-slate-400 uppercase;
+    }
+    .nav-link {
+        @apply flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-ink;
+    }
+    .nav-link.active {
+        @apply bg-brand-50 text-brand-700;
+    }
+
+    /* Blue duotone photo treatment, inspired by everynation.or.id */
+    .duotone {
+        @apply relative isolate overflow-hidden bg-brand-800;
+    }
+    .duotone > img {
+        @apply absolute inset-0 -z-10 size-full object-cover mix-blend-luminosity grayscale;
+    }
+    .duotone::after {
+        content: '';
+        @apply absolute inset-0 -z-10 bg-gradient-to-br from-brand-800/80 via-brand/55 to-ink/80;
+    }
+
+    .progress {
+        @apply h-2 w-full overflow-hidden rounded-full bg-slate-100;
+    }
+    .progress > span {
+        @apply block h-full rounded-full bg-brand transition-all;
+    }
 }

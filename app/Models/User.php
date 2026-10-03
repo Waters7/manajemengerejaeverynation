@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountStatus;
+use App\Enums\MemberStatus;
 use App\Enums\Role;
 use App\Models\Concerns\Auditable;
 use Database\Factories\UserFactory;
@@ -52,6 +53,25 @@ class User extends Authenticatable
     public function followUpTasks(): HasMany
     {
         return $this->hasMany(FollowUpTask::class, 'assigned_to');
+    }
+
+    /** Every account is backed by a person record; create it lazily for older accounts. */
+    public function ensureProfile(): Profile
+    {
+        if ($this->profile) {
+            return $this->profile;
+        }
+
+        $profile = $this->profile()->create([
+            'full_name' => $this->name,
+            'nickname' => $this->nickname,
+            'email' => $this->email,
+            'whatsapp' => $this->whatsapp,
+            'member_status' => MemberStatus::Newcomer,
+        ]);
+        $this->setRelation('profile', $profile);
+
+        return $profile;
     }
 
     public function displayName(): string
