@@ -4,7 +4,10 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\LifeGroupCategory;
 use App\Enums\Role;
+use App\Models\ClassBatch;
+use App\Models\InvolvementRequest;
 use App\Models\LifeGroup;
+use App\Models\LifeGroupMeeting;
 use App\Models\Profile;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
@@ -116,6 +119,9 @@ class AdminAccessTest extends TestCase
             'admin.dashboard', 'admin.members.index', 'admin.members.create', 'admin.newcomers.index', 'admin.involvement.index',
             'admin.follow-ups.index', 'admin.lifegroups.index', 'admin.lifegroups.create', 'admin.join-requests.index',
             'admin.meetings.index', 'admin.birthdays.index', 'admin.users.index', 'admin.roles.index', 'admin.notifications.index',
+            'admin.journey.index', 'admin.one2one.index', 'admin.curriculum.index', 'admin.curriculum.programs.create', 'admin.books.index',
+            'admin.classes.index', 'admin.classes.create', 'admin.victory-weekend.index', 'admin.disciplers.index', 'admin.disciplers.tree',
+            'admin.leadership.index',
         ])->mapWithKeys(fn ($route) => [$route => [$route]])->all();
     }
 
@@ -126,5 +132,35 @@ class AdminAccessTest extends TestCase
         $admin = User::role(Role::SuperAdmin->value)->first() ?? $this->userWithRole(Role::SuperAdmin);
 
         $this->actingAs($admin)->get(route($route))->assertOk();
+    }
+
+    public function test_detail_pages_render_with_demo_data(): void
+    {
+        $this->seed(DemoSeeder::class);
+        $admin = $this->userWithRole(Role::SuperAdmin);
+        $member = Profile::whereHas('programProgress')->whereHas('lifeGroupMemberships')->firstOrFail();
+        $progress = $member->programProgress()->firstOrFail();
+        $batch = ClassBatch::firstOrFail();
+
+        $pages = [
+            route('admin.members.show', $member),
+            route('admin.members.edit', $member),
+            route('admin.lifegroups.show', $member->lifeGroupMemberships()->value('life_group_id')),
+            route('admin.lifegroups.edit', $member->lifeGroupMemberships()->value('life_group_id')),
+            route('admin.involvement.show', InvolvementRequest::firstOrFail()),
+            route('admin.progress.show', $progress),
+            route('admin.classes.show', $batch),
+            route('admin.classes.edit', $batch),
+            route('admin.classes.sessions.show', $batch->sessions()->firstOrFail()),
+            route('admin.curriculum.programs.edit', $progress->discipleship_program_id),
+            route('admin.meetings.create', $member->lifeGroupMemberships()->value('life_group_id')),
+            route('admin.meetings.edit', LifeGroupMeeting::firstOrFail()),
+            route('admin.users.edit', $admin),
+            route('admin.search', ['q' => mb_substr($member->full_name, 0, 4)]),
+        ];
+
+        foreach ($pages as $url) {
+            $this->actingAs($admin)->get($url)->assertOk();
+        }
     }
 }
