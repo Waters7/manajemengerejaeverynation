@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\AccountStatus;
 use App\Enums\BaptismStatus;
+use App\Enums\CertificateType;
 use App\Enums\ContactType;
 use App\Enums\DiscoverySource;
 use App\Enums\FollowUpCategory;
@@ -15,12 +16,14 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProfileRequest;
 use App\Models\Campus;
+use App\Models\DiscipleshipProgram;
 use App\Models\DiscipleshipStage;
 use App\Models\LifeGroup;
 use App\Models\LifeGroupAttendance;
 use App\Models\Profile;
 use App\Models\User;
 use App\Services\AccessScope;
+use App\Services\CertificateService;
 use App\Services\JourneyService;
 use App\Services\LifeGroupService;
 use App\Services\MediaService;
@@ -89,7 +92,7 @@ class MemberController extends Controller
         return redirect()->route('admin.members.show', $profile)->with('status', "{$profile->full_name} has been added.");
     }
 
-    public function show(Request $request, Profile $profile, JourneyService $journey, WhatsApp $whatsApp): View
+    public function show(Request $request, Profile $profile, JourneyService $journey, WhatsApp $whatsApp, CertificateService $certificates): View
     {
         $this->authorize('view', $profile);
 
@@ -121,6 +124,10 @@ class MemberController extends Controller
             'teamMembers' => User::permission('followups.manage')->where('account_status', AccountStatus::Active->value)->orderBy('name')->pluck('name', 'id'),
             'waLink' => $whatsApp->link($profile->whatsapp, 'Hi '.$profile->displayName().'! 👋'),
             'roles' => LifeGroupRole::options(),
+            'certificates' => $profile->certificates()->with(['program', 'issuer'])->get(),
+            'records' => $certificates->journeyRecords($profile),
+            'oneTimePrograms' => DiscipleshipProgram::where('certificate_type', CertificateType::Once->value)->orderBy('sequence')->pluck('name', 'id'),
+            'propheticWords' => $request->user()->can('managePropheticWords', $profile) ? $profile->propheticWords()->with('uploader')->get() : collect(),
         ]);
     }
 

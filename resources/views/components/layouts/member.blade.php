@@ -8,6 +8,8 @@
         ['My Classes', 'member.classes', 'academic'],
         ['My Events', 'member.events', 'calendar'],
         ['Serving', 'member.serving', 'hand'],
+        ['Certificates', 'member.certificates', 'star'],
+        ['Prophetic Words', 'member.prophetic-words', 'music'],
     ];
     if ($user->profile?->discipleRelationships()->where('status', 'active')->exists()) {
         $links[] = ['My Disciples', 'member.disciples', 'tree'];

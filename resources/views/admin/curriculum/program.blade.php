@@ -15,6 +15,7 @@
             <x-form.select name="prerequisite_id" label="Prerequisite" :options="$prerequisites" :value="$program->prerequisite_id" placeholder="None" />
             <x-form.textarea name="description" label="Description" :value="$program->description" rows="3" />
             <x-form.select name="status" label="Status" :options="['active' => 'Active', 'inactive' => 'Inactive']" :value="$program->status" />
+            <x-form.select name="certificate_type" label="Certificate" :options="$certificateTypes" :value="$program->certificate_type ?? 'count'" required hint="Leadership 113 / 215: one-time certificate. Repeatable journey programs: counted record." />
             <x-form.checkbox name="is_required" label="Required in the journey" :checked="$program->is_required" />
             <x-form.checkbox name="is_milestone" label="Discipleship milestone (e.g. Victory Weekend)" :checked="$program->is_milestone" />
             @if (! $program->exists || $program->chapters->isEmpty())

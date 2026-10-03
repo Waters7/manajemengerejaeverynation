@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\CertificateType;
 use App\Enums\ProgramType;
 use App\Http\Controllers\Controller;
 use App\Models\CurriculumChapter;
@@ -126,6 +127,7 @@ class ProgramController extends Controller
             'is_milestone' => ['boolean'],
             'total_sessions' => ['nullable', 'integer', 'min:0', 'max:200'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'certificate_type' => ['required', Rule::enum(CertificateType::class)],
             'generate_chapters' => ['nullable', 'integer', 'min:0', 'max:60'],
         ]);
 
@@ -141,6 +143,7 @@ class ProgramController extends Controller
             'program' => $program,
             'stages' => DiscipleshipStage::orderBy('sequence')->pluck('name', 'id'),
             'types' => ProgramType::options(),
+            'certificateTypes' => CertificateType::options(),
             'prerequisites' => DiscipleshipProgram::whereKeyNot($program->id)->orderBy('sequence')->pluck('name', 'id'),
         ];
     }

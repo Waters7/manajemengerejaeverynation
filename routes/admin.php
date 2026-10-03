@@ -24,6 +24,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('members/{profile}/activate', [Admin\MemberController::class, 'activate'])->name('members.activate');
         Route::post('members/{profile}/lifegroup', [Admin\MemberController::class, 'assignLifeGroup'])->name('members.lifegroup');
         Route::post('members/{profile}/account', [Admin\MemberController::class, 'createAccount'])->name('members.account');
+        Route::post('members/{profile}/certificates', [Admin\CertificateController::class, 'store'])->name('members.certificates.store');
+        Route::delete('certificates/{certificate}', [Admin\CertificateController::class, 'destroy'])->name('certificates.destroy');
+        Route::post('members/{profile}/prophetic-words', [Admin\PropheticWordController::class, 'store'])->name('members.prophetic-words.store');
+        Route::delete('prophetic-words/{word}', [Admin\PropheticWordController::class, 'destroy'])->name('prophetic-words.destroy');
     });
     Route::get('newcomers', [Admin\NewcomerController::class, 'index'])->middleware('permission:newcomers.view')->name('newcomers.index');
     Route::patch('newcomers/{newcomer}', [Admin\NewcomerController::class, 'update'])->middleware('permission:newcomers.manage')->name('newcomers.update');

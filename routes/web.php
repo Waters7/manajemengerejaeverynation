@@ -3,7 +3,9 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\Member;
+use App\Http\Controllers\PropheticWordController;
 use App\Http\Controllers\Site;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +65,19 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 
 /*
 |--------------------------------------------------------------------------
+| Personal files — opened by the person or by the team caring for them (policies decide)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/certificates/{certificate}', [CertificateController::class, 'show'])->name('certificates.show');
+    Route::get('/certificates/{certificate}/file', [CertificateController::class, 'file'])->name('certificates.file');
+    Route::get('/journey-record/{profile}/{program}', [CertificateController::class, 'journeyRecord'])->name('certificates.journey-record');
+    Route::get('/prophetic-words/{word}/audio', [PropheticWordController::class, 'audio'])->name('prophetic-words.audio');
+    Route::get('/prophetic-words/{word}/download', [PropheticWordController::class, 'download'])->name('prophetic-words.download');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Member area — every signed-in person (role USER and above)
 |--------------------------------------------------------------------------
 */
@@ -78,6 +93,8 @@ Route::middleware('auth')->prefix('my')->name('member.')->group(function () {
     Route::get('/events', [Member\EventController::class, 'index'])->name('events');
     Route::delete('/events/{registration}', [Member\EventController::class, 'cancel'])->name('events.cancel');
     Route::get('/serving', Member\ServingController::class)->name('serving');
+    Route::get('/certificates', Member\CertificateController::class)->name('certificates');
+    Route::get('/prophetic-words', Member\PropheticWordController::class)->name('prophetic-words');
     Route::get('/disciples', [Member\DiscipleController::class, 'index'])->name('disciples');
     Route::get('/disciples/{profile}', [Member\DiscipleController::class, 'show'])->name('disciples.show');
     Route::post('/disciples/{profile}/meetings', [Member\DiscipleController::class, 'meeting'])->name('disciples.meetings.store');

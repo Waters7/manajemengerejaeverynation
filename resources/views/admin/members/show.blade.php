@@ -1,6 +1,6 @@
 <x-layouts.admin :title="$profile->full_name">
     @php
-        $tabs = ['overview' => 'Overview', 'discipleship' => 'Discipleship', 'lifegroup' => 'LifeGroup', 'classes' => 'Classes', 'ministry' => 'Ministry', 'events' => 'Events', 'attendance' => 'Attendance', 'timeline' => 'Timeline'];
+        $tabs = ['overview' => 'Overview', 'discipleship' => 'Discipleship', 'lifegroup' => 'LifeGroup', 'classes' => 'Classes', 'ministry' => 'Ministry', 'events' => 'Events', 'attendance' => 'Attendance', 'files' => 'Certificates & Files', 'timeline' => 'Timeline'];
         $canEdit = auth()->user()->can('update', $profile);
         $canDisciple = auth()->user()->can('disciple', $profile);
     @endphp
@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <div x-data="{ tab: (location.hash || '#overview').slice(1) }" x-init="$watch('tab', t => history.replaceState(null, '', '#' + t))">
+    <div x-data="{ tab: (location.hash || '#{{ $errors->hasAny(['file', 'audio', 'type', 'discipleship_program_id', 'title', 'given_on']) ? 'files' : ($errors->hasAny(['baptism_status', 'baptism_date']) ? 'discipleship' : 'overview') }}').slice(1) }" x-init="$watch('tab', t => history.replaceState(null, '', '#' + t))">
         <nav class="mb-6 flex gap-1 overflow-x-auto rounded-2xl border border-line bg-white p-1.5">
             @foreach ($tabs as $key => $label)
                 <button type="button" x-on:click="tab = '{{ $key }}'" :class="tab === '{{ $key }}' ? 'bg-brand text-white' : 'text-slate-600 hover:bg-slate-100'" class="shrink-0 rounded-xl px-4 py-2 text-sm font-bold transition">{{ $label }}</button>
@@ -343,6 +343,122 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        {{-- CERTIFICATES & FILES --}}
+        <div x-show="tab === 'files'" x-cloak class="grid gap-6 lg:grid-cols-3">
+            <div class="space-y-6 lg:col-span-2">
+                <div class="card">
+                    <div class="border-b border-line p-5">
+                        <h2 class="font-extrabold uppercase">Certificates</h2>
+                        <p class="text-sm text-muted">Visible to {{ $profile->displayName() }} in their account{{ $profile->user ? '' : ' once they have a login account' }}.</p>
+                    </div>
+                    <ul class="divide-y divide-line">
+                        @forelse ($certificates as $certificate)
+                            <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                                <span>
+                                    <span class="font-bold">{{ $certificate->title }}</span> <x-badge :value="$certificate->type" />
+                                    <span class="block text-xs text-muted">{{ $certificate->issued_at->translatedFormat('j M Y') }} · {{ $certificate->certificate_number }}{{ $certificate->hasFile() ? ' · '.$certificate->file_name : ' · generated' }}{{ $certificate->issuer ? ' · by '.$certificate->issuer->name : '' }}</span>
+                                </span>
+                                <span class="flex gap-2">
+                                    <a href="{{ route('certificates.show', $certificate) }}" target="_blank" class="btn btn-outline btn-sm"><x-icon name="eye" class="size-4" /> Open</a>
+                                    @can('delete', $certificate)
+                                        <form method="POST" action="{{ route('admin.certificates.destroy', $certificate) }}" data-confirm="Remove this certificate from the account?">@csrf @method('DELETE')<button class="btn btn-ghost btn-sm text-danger"><x-icon name="trash" class="size-4" /></button></form>
+                                    @endcan
+                                </span>
+                            </li>
+                        @empty
+                            <li class="p-5 text-sm text-muted">No certificates yet. Leadership 113 / 215 certificates are issued automatically when the class is completed.</li>
+                        @endforelse
+                    </ul>
+                </div>
+
+                <div class="card overflow-x-auto">
+                    <div class="border-b border-line p-5">
+                        <h2 class="font-extrabold uppercase">Journey record</h2>
+                        <p class="text-sm text-muted">Repeatable programs are counted — for themselves and for the people they led.</p>
+                    </div>
+                    <table class="table">
+                        <thead><tr><th>Program</th><th class="text-right">For themselves</th><th class="text-right">Led others</th><th class="text-right">Leading now</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach ($records as $record)
+                                <tr @class(['text-slate-400' => $record['self'] === 0 && $record['led'] === 0])>
+                                    <td class="font-bold">{{ $record['program']->name }}</td>
+                                    <td class="text-right font-extrabold tabular-nums">{{ $record['self'] }}×</td>
+                                    <td class="text-right font-extrabold tabular-nums">{{ $record['led'] }}×</td>
+                                    <td class="text-right tabular-nums">{{ $record['leading'] }}</td>
+                                    <td class="text-right">@if ($record['self'] > 0 || $record['led'] > 0)<a href="{{ route('certificates.journey-record', [$profile, $record['program']]) }}" target="_blank" class="btn btn-ghost btn-sm">Record</a>@endif</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                @can('managePropheticWords', $profile)
+                    <div class="card">
+                        <div class="border-b border-line p-5">
+                            <h2 class="font-extrabold uppercase">Prophetic words</h2>
+                            <p class="flex items-center gap-1 text-sm text-muted"><x-icon name="lock" class="size-3.5" /> Private — only {{ $profile->displayName() }} and staff with prophetic-word access can listen.</p>
+                        </div>
+                        <ul class="divide-y divide-line">
+                            @forelse ($propheticWords as $word)
+                                <li class="px-5 py-4">
+                                    <div class="flex flex-wrap items-start justify-between gap-3">
+                                        <span><span class="font-bold">{{ $word->title }}</span><span class="block text-xs text-muted">{{ $word->given_on?->translatedFormat('j M Y') ?? $word->created_at->translatedFormat('j M Y') }}{{ $word->given_by ? ' · '.$word->given_by : '' }} · uploaded by {{ $word->uploader?->name }}</span></span>
+                                        <form method="POST" action="{{ route('admin.prophetic-words.destroy', $word) }}" data-confirm="Delete this recording?">@csrf @method('DELETE')<button class="btn btn-ghost btn-sm text-danger"><x-icon name="trash" class="size-4" /></button></form>
+                                    </div>
+                                    <audio controls preload="none" class="mt-3 w-full" src="{{ route('prophetic-words.audio', $word) }}"></audio>
+                                </li>
+                            @empty
+                                <li class="p-5 text-sm text-muted">No recordings yet.</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                @endcan
+            </div>
+
+            <div class="space-y-6">
+                @can('manageCertificates', $profile)
+                    <form method="POST" action="{{ route('admin.members.certificates.store', $profile) }}" enctype="multipart/form-data" class="card card-pad space-y-4" x-data="{ type: '{{ old('type', 'baptism') }}' }">
+                        @csrf
+                        <h2 class="font-extrabold uppercase">Upload certificate</h2>
+                        <x-form.select name="type" label="Type" :options="\App\Enums\CertificateKind::options()" value="baptism" x-model="type" required />
+                        <div x-show="type === 'program'" x-cloak>
+                            <x-form.select name="discipleship_program_id" label="Program" :options="$oneTimePrograms" placeholder="Choose…" hint="Replaces the generated certificate with the signed scan." />
+                        </div>
+                        <div x-show="type !== 'program'">
+                            <x-form.input name="title" label="Title" placeholder="Water Baptism" />
+                        </div>
+                        <x-form.input name="issued_at" type="date" label="Date" :value="$profile->baptism_date" />
+                        <div>
+                            <label class="label">File (PDF / JPG / PNG, max 10 MB)</label>
+                            <input type="file" name="file" accept=".pdf,image/*" required class="input">
+                            @error('file')<p class="error">{{ $message }}</p>@enderror
+                        </div>
+                        <x-form.textarea name="notes" label="Notes" rows="2" />
+                        <button class="btn btn-primary w-full"><x-icon name="upload" class="size-4" /> Upload</button>
+                    </form>
+                @endcan
+
+                @can('managePropheticWords', $profile)
+                    <form method="POST" action="{{ route('admin.members.prophetic-words.store', $profile) }}" enctype="multipart/form-data" class="card card-pad space-y-4">
+                        @csrf
+                        <h2 class="font-extrabold uppercase">Upload prophetic word</h2>
+                        <x-form.input name="title" label="Title" placeholder="e.g. Prophetic word — Encounter Night" required />
+                        <div class="grid grid-cols-2 gap-3">
+                            <x-form.input name="given_on" type="date" label="Date" :value="today()" />
+                            <x-form.input name="given_by" label="Given by" />
+                        </div>
+                        <div>
+                            <label class="label">Audio (MP3 / M4A / WAV / OGG, max 20 MB)</label>
+                            <input type="file" name="audio" accept="audio/*" required class="input">
+                            @error('audio')<p class="error">{{ $message }}</p>@enderror
+                        </div>
+                        <x-form.textarea name="notes" label="Notes / transcript (encrypted)" rows="3" />
+                        <button class="btn btn-primary w-full"><x-icon name="upload" class="size-4" /> Upload audio</button>
+                    </form>
+                @endcan
+            </div>
         </div>
 
         {{-- TIMELINE --}}

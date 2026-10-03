@@ -88,6 +88,7 @@ erDiagram
 | Events | `event_categories`, `events`, `event_registrations` |
 | Content | `devotionals`, `sermon_series`, `sermons`, `sermon_points`, `galleries`, `gallery_images`, `pages`, `announcements`, `media`, `site_settings` |
 | Care | `prayer_requests`, `pastoral_care_categories`, `pastoral_care_requests`, `pastoral_care_notes` (encrypted) |
+| Certificates & personal files | `certificates` (uploaded baptism / other certificates, numbered one-time program certificates), `prophetic_words` (private audio, encrypted notes); `profiles.baptism_status / baptism_date / baptism_place`; `discipleship_programs.certificate_type` (`count` = repeatable journey record, `once` = Leadership 113 / 215 certificate) |
 | System | `notifications`, `jobs`, `audit_logs`, `timeline_entries` |
 
 ### Naming notes

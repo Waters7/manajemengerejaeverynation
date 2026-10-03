@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CertificateType;
 use App\Enums\ProgramType;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\HasSlug;
@@ -27,7 +28,7 @@ class DiscipleshipProgram extends Model
 
     protected $fillable = [
         'discipleship_stage_id', 'name', 'slug', 'description', 'type', 'sequence', 'prerequisite_id',
-        'is_required', 'is_milestone', 'total_sessions', 'status',
+        'is_required', 'is_milestone', 'total_sessions', 'status', 'certificate_type',
     ];
 
     protected function casts(): array
@@ -36,6 +37,7 @@ class DiscipleshipProgram extends Model
             'type' => ProgramType::class,
             'is_required' => 'boolean',
             'is_milestone' => 'boolean',
+            'certificate_type' => CertificateType::class,
         ];
     }
 
@@ -62,6 +64,11 @@ class DiscipleshipProgram extends Model
     public function progress(): HasMany
     {
         return $this->hasMany(MemberProgramProgress::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 
     public function scopeActive(Builder $query): Builder

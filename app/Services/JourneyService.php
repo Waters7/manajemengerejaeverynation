@@ -26,6 +26,7 @@ class JourneyService
     public function __construct(
         private TimelineRecorder $timeline,
         private PeopleService $people,
+        private CertificateService $certificates,
     ) {}
 
     /**
@@ -115,6 +116,7 @@ class JourneyService
             ]);
 
             $this->timeline->record($progress->profile, 'program_completed', "Completed {$progress->program->name}", null, $progress, $progress->completed_at);
+            $this->certificates->issueProgramCertificate($progress);
             $this->recalculate($progress->profile);
 
             return $progress;

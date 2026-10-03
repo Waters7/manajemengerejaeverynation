@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CertificateType;
 use App\Enums\InterestAction;
 use App\Enums\ProgramType;
 use App\Models\DiscipleshipProgram;
@@ -75,6 +76,12 @@ class ReferenceDataSeeder extends Seeder
                         'status' => 'active',
                     ],
                 );
+
+                // Leadership trainings are taken once and earn a certificate; the rest of the
+                // journey is repeatable and recorded as counts (for yourself and for others).
+                if ($program->wasRecentlyCreated && str_starts_with($name, 'Leadership')) {
+                    $program->update(['certificate_type' => CertificateType::Once]);
+                }
 
                 if ($unitLabel && ! $program->chapters()->exists()) {
                     foreach (range(1, $units) as $n) {

@@ -27,6 +27,8 @@ Legend: **F** full · **S** scoped (own LifeGroup / disciples, own campus, own m
 | `content.manage` (devotionals, sermons, gallery, pages, homepage) | F | F | — | — | — | — | — |
 | `prayer.view` | F | F (all) | S campus, not pastor-only | S own group, `lifegroup_leader` visibility | — | prayer_team visibility* | own |
 | `pastoral.view` / `.manage` | F | F | — | — | — | — | — |
+| `certificates.manage` (upload baptism / program certificates) | F | F | S campus | S own group & disciples | — | — | own certificates (read) |
+| `prophecy.manage` (upload / listen to prophetic words) | F | F | — | — | — | — | own recordings (listen) |
 | `announcements.manage` | F | F | — | — | — | — | — |
 | `birthdays.view` | F | F | S campus | S own group | S own ministry | — | — |
 | `reports.view` / `reports.export` | F | F | S campus | — | — | — | — |

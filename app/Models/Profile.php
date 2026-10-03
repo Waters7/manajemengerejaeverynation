@@ -166,6 +166,16 @@ class Profile extends Model
         return $this->hasOne(LeadershipCandidate::class);
     }
 
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class)->latest('issued_at');
+    }
+
+    public function propheticWords(): HasMany
+    {
+        return $this->hasMany(PropheticWord::class)->latest('given_on')->latest('id');
+    }
+
     public function prayerRequests(): HasMany
     {
         return $this->hasMany(PrayerRequest::class);

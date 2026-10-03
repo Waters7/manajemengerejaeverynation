@@ -49,6 +49,24 @@ class ProfilePolicy
         return $user->can('discipleship.manage') && $this->scope->canSeeProfile($user, $profile);
     }
 
+    /** Upload baptism / program certificates for a person (admin or church leader). */
+    public function manageCertificates(User $user, Profile $profile): bool
+    {
+        return $user->can('certificates.manage') && $this->scope->canSeeProfile($user, $profile);
+    }
+
+    /** Upload prophetic word recordings for a person (church staff). */
+    public function managePropheticWords(User $user, Profile $profile): bool
+    {
+        return $user->can('prophecy.manage') && $this->scope->canSeeProfile($user, $profile);
+    }
+
+    /** Journey record (counts) and certificates: the person themselves or the ministry team caring for them. */
+    public function viewRecords(User $user, Profile $profile): bool
+    {
+        return $this->scope->profileId($user) === $profile->id || $this->view($user, $profile);
+    }
+
     /** Internal follow-up / pastoral notes are never visible to the person themselves or other members. */
     public function viewInternalNotes(User $user, Profile $profile): bool
     {

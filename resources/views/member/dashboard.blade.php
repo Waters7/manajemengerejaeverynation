@@ -5,6 +5,14 @@
         <p class="mt-3 max-w-xl text-white/80">“Karena itu pergilah, jadikanlah semua bangsa murid-Ku.” — Matius 28:19</p>
     </div>
 
+    @foreach ($user->unreadNotifications()->whereIn('data->category', ['certificate', 'prophetic_word'])->latest()->limit(3)->get() as $notification)
+        <a href="{{ $notification->data['url'] ?? route('member.dashboard') }}" class="card card-hover mt-4 flex items-center gap-3 border-green-200 bg-green-50/60 p-4">
+            <x-icon name="sparkles" class="size-5 shrink-0 text-success" />
+            <div class="grow"><p class="font-bold">{{ $notification->data['title'] ?? 'Update' }}</p><p class="text-sm text-slate-600">{{ $notification->data['message'] ?? '' }}</p></div>
+            <x-icon name="arrow-right" class="size-4 text-muted" />
+        </a>
+    @endforeach
+
     @foreach ($announcements as $announcement)
         <div class="card mt-4 flex gap-3 border-brand/30 bg-brand-50/50 p-4">
             <x-icon name="megaphone" class="size-5 shrink-0 text-brand" />
