@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\AccountStatus;
+use App\Enums\Role;
+use App\Models\User;
 use App\Services\SuperAdminProvisioner;
 use Illuminate\Console\Command;
 
@@ -11,7 +14,9 @@ use Illuminate\Console\Command;
  */
 class CreateSuperAdmin extends Command
 {
-    protected $signature = 'church:admin {--reset-password : Also set the password of an existing admin to ADMIN_PASSWORD}';
+    protected $signature = 'church:admin
+        {--reset-password : Also set the password of an existing admin to ADMIN_PASSWORD}
+        {--deactivate=* : Login(s) of other admin accounts to deactivate (e.g. an accidental duplicate)}';
 
     protected $description = 'Create or repair the Super Admin account from ADMIN_EMAIL / ADMIN_PASSWORD';
 
@@ -28,6 +33,18 @@ class CreateSuperAdmin extends Command
 
         if ($result['generated_password']) {
             $this->warn("ADMIN_PASSWORD is empty — generated password: {$result['generated_password']}");
+        }
+
+        foreach ((array) $this->option('deactivate') as $other) {
+            $account = User::where('email', $other)->first();
+            if (! $account || $account->is($result['user'])) {
+                $this->line("Skipped “{$other}” (not found or the main admin).");
+
+                continue;
+            }
+            $account->forceFill(['account_status' => AccountStatus::Inactive])->save();
+            $account->syncRoles([Role::User->value]);
+            $this->info("Account “{$other}” deactivated and its admin role removed.");
         }
 
         return self::SUCCESS;

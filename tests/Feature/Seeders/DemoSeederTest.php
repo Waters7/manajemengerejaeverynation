@@ -69,4 +69,29 @@ class DemoSeederTest extends TestCase
 
         $this->assertTrue(Hash::check('second-password-2', User::where('email', 'admin')->value('password')));
     }
+
+    public function test_admin_command_deactivates_an_accidental_duplicate_admin(): void
+    {
+        config(['church.admin_email' => 'admin', 'church.admin_password' => 'first-password-1']);
+        $this->artisan('church:admin')->assertSuccessful();
+        $duplicate = User::factory()->create(['email' => 'admin@everynationbekasi.test']);
+        $duplicate->assignRole(Role::SuperAdmin->value);
+
+        $this->artisan('church:admin', ['--deactivate' => ['admin@everynationbekasi.test']])->assertSuccessful();
+
+        $duplicate->refresh();
+        $this->assertFalse($duplicate->hasRole(Role::SuperAdmin->value));
+        $this->assertFalse($duplicate->isActive());
+        $this->assertTrue(User::where('email', 'admin')->firstOrFail()->hasRole(Role::SuperAdmin->value));
+    }
+
+    public function test_scheduled_tasks_run_in_process_without_proc_open(): void
+    {
+        $events = app(\Illuminate\Console\Scheduling\Schedule::class)->events();
+
+        $this->assertNotEmpty($events);
+        foreach ($events as $event) {
+            $this->assertInstanceOf(\Illuminate\Console\Scheduling\CallbackEvent::class, $event, "{$event->description} would need proc_open");
+        }
+    }
 }
