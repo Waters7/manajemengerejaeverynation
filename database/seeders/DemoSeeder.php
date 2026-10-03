@@ -66,7 +66,7 @@ class DemoSeeder extends Seeder
             return;
         }
 
-        $configured = env('DEMO_PASSWORD');
+        $configured = config('church.demo_password');
         if (app()->isProduction() && (blank($configured) || strlen($configured) < 10)) {
             $this->command?->warn('Demo data skipped: set DEMO_PASSWORD (min. 10 characters) in .env to seed demo accounts in production.');
 

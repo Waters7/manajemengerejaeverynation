@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Seeders;
 
+use App\Enums\Role;
 use App\Models\Profile;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
@@ -21,16 +22,10 @@ class DemoSeederTest extends TestCase
         $this->seed([RolesAndPermissionsSeeder::class, ReferenceDataSeeder::class]);
     }
 
-    protected function tearDown(): void
-    {
-        putenv('DEMO_PASSWORD');
-        unset($_ENV['DEMO_PASSWORD'], $_SERVER['DEMO_PASSWORD']);
-        parent::tearDown();
-    }
-
     public function test_production_without_demo_password_skips_demo_accounts(): void
     {
         $this->app['env'] = 'production';
+        config(['church.demo_password' => null]);
 
         $this->artisan('db:seed', ['--class' => DemoSeeder::class, '--force' => true])->assertSuccessful();
 
@@ -41,13 +36,37 @@ class DemoSeederTest extends TestCase
     public function test_production_demo_accounts_use_the_configured_password(): void
     {
         $this->app['env'] = 'production';
-        putenv('DEMO_PASSWORD=Gembala-Bekasi-2026');
-        $_ENV['DEMO_PASSWORD'] = $_SERVER['DEMO_PASSWORD'] = 'Gembala-Bekasi-2026';
+        config(['church.demo_password' => 'Gembala-Bekasi-2026']);
 
         $this->artisan('db:seed', ['--class' => DemoSeeder::class, '--force' => true])->assertSuccessful();
 
         $pastor = User::where('email', 'pastor@everynationbekasi.test')->firstOrFail();
         $this->assertTrue(Hash::check('Gembala-Bekasi-2026', $pastor->password));
         $this->assertFalse(Hash::check('password', $pastor->password));
+    }
+
+    public function test_seeding_twice_in_production_keeps_a_single_configured_admin(): void
+    {
+        $this->app['env'] = 'production';
+        config(['church.admin_email' => 'admin', 'church.admin_password' => 'honor-god-2026', 'church.seed_demo' => false]);
+
+        $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
+        $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
+
+        $admins = User::role(Role::SuperAdmin->value)->get();
+        $this->assertCount(1, $admins);
+        $this->assertSame('admin', $admins->first()->email);
+        $this->assertTrue(Hash::check('honor-god-2026', $admins->first()->password));
+    }
+
+    public function test_admin_command_resets_the_password_from_config(): void
+    {
+        config(['church.admin_email' => 'admin', 'church.admin_password' => 'first-password-1']);
+        $this->artisan('church:admin')->assertSuccessful();
+
+        config(['church.admin_password' => 'second-password-2']);
+        $this->artisan('church:admin', ['--reset-password' => true])->assertSuccessful();
+
+        $this->assertTrue(Hash::check('second-password-2', User::where('email', 'admin')->value('password')));
     }
 }
