@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AnnouncementAudience;
 use App\Enums\Role;
 use App\Enums\VolunteerApplicationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Announcement;
 use App\Models\ClassBatch;
 use App\Models\InvolvementRequest;
 use App\Models\LifeGroup;
@@ -41,6 +43,9 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', [
             'user' => $user,
+            'announcements' => Announcement::current()
+                ->whereIn('audience', [AnnouncementAudience::Everyone->value, AnnouncementAudience::Leaders->value, AnnouncementAudience::MinistryTeam->value])
+                ->limit(3)->get(),
             'churchWide' => $churchWide,
             'metrics' => $metrics->forUser($user),
             'funnel' => $journey->funnel(fn ($q) => $scope->profiles($q, $user)),

@@ -10,6 +10,13 @@
         @endcan
     </div>
 
+    @foreach ($announcements as $announcement)
+        <div class="card mb-4 flex gap-3 border-brand/30 bg-brand-50/50 p-4">
+            <x-icon name="megaphone" class="size-5 shrink-0 text-brand" />
+            <div><p class="font-bold">{{ $announcement->title }}</p><p class="text-sm whitespace-pre-line text-slate-600">{{ $announcement->body }}</p></div>
+        </div>
+    @endforeach
+
     {{-- Headline metrics — every tile is clickable --}}
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-stat label="Active members" :value="number_format($metrics['active_members'])" icon="users" :href="route('admin.members.index', ['status' => 'member'])" />

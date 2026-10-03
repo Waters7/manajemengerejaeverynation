@@ -51,7 +51,7 @@
                 @foreach ($nav as [$label, $route, $pattern])
                     <a href="{{ route($route) }}"
                         :class="scrolled || {{ $transparent ? 'false' : 'true' }} ? '{{ request()->routeIs($pattern) ? 'text-brand' : 'text-slate-700 hover:text-brand' }}' : 'text-white/90 hover:text-white'"
-                        class="rounded-full px-3 py-2 text-[0.8125rem] font-bold tracking-wide transition">{{ $label }}</a>
+                        class="rounded-full px-2.5 py-2 text-[0.8125rem] font-bold tracking-wide whitespace-nowrap transition 2xl:px-3">{{ $label }}</a>
                 @endforeach
             </nav>
 

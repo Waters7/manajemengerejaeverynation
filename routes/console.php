@@ -1,8 +1,13 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+|--------------------------------------------------------------------------
+| Automation (run `php artisan schedule:work`, or a cron calling schedule:run)
+|--------------------------------------------------------------------------
+*/
+Schedule::command('church:publish-scheduled')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('church:birthday-reminders')->dailyAt('06:00');
+Schedule::command('church:follow-up-digest')->weekdays()->at('07:00');
+Schedule::command('queue:prune-failed --hours=168')->weekly();

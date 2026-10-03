@@ -4,12 +4,20 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\LifeGroupCategory;
 use App\Enums\Role;
+use App\Models\Campus;
 use App\Models\ClassBatch;
+use App\Models\Devotional;
+use App\Models\Event;
 use App\Models\InvolvementRequest;
 use App\Models\LifeGroup;
 use App\Models\LifeGroupMeeting;
+use App\Models\Ministry;
+use App\Models\PrayerRequest;
 use App\Models\Profile;
+use App\Models\Sermon;
 use App\Models\User;
+use App\Models\VolunteerApplication;
+use App\Services\ReportService;
 use Database\Seeders\DemoSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -122,6 +130,13 @@ class AdminAccessTest extends TestCase
             'admin.journey.index', 'admin.one2one.index', 'admin.curriculum.index', 'admin.curriculum.programs.create', 'admin.books.index',
             'admin.classes.index', 'admin.classes.create', 'admin.victory-weekend.index', 'admin.disciplers.index', 'admin.disciplers.tree',
             'admin.leadership.index',
+            'admin.ministries.index', 'admin.ministries.create', 'admin.volunteers.index', 'admin.volunteer-applications.index',
+            'admin.serving.index', 'admin.campuses.index', 'admin.campuses.create',
+            'admin.events.index', 'admin.events.create', 'admin.homepage.edit', 'admin.devotionals.index', 'admin.devotionals.create',
+            'admin.sermons.index', 'admin.sermons.create', 'admin.galleries.index', 'admin.galleries.create', 'admin.pages.index', 'admin.pages.create',
+            'admin.prayer-requests.index', 'admin.pastoral-care.index', 'admin.pastoral-care.create',
+            'admin.announcements.index', 'admin.announcements.create', 'admin.reports.index',
+            'admin.media.index', 'admin.settings.edit', 'admin.interests.index', 'admin.audit-logs.index',
         ])->mapWithKeys(fn ($route) => [$route => [$route]])->all();
     }
 
@@ -132,6 +147,17 @@ class AdminAccessTest extends TestCase
         $admin = User::role(Role::SuperAdmin->value)->first() ?? $this->userWithRole(Role::SuperAdmin);
 
         $this->actingAs($admin)->get(route($route))->assertOk();
+    }
+
+    public function test_every_report_renders_and_exports(): void
+    {
+        $this->seed(DemoSeeder::class);
+        $admin = $this->userWithRole(Role::SuperAdmin);
+
+        foreach (array_keys(ReportService::catalog()) as $report) {
+            $this->actingAs($admin)->get(route('admin.reports.show', $report))->assertOk();
+            $this->actingAs($admin)->get(route('admin.reports.export', [$report, 'format' => 'csv']))->assertOk()->assertDownload();
+        }
     }
 
     public function test_detail_pages_render_with_demo_data(): void
@@ -157,6 +183,18 @@ class AdminAccessTest extends TestCase
             route('admin.meetings.edit', LifeGroupMeeting::firstOrFail()),
             route('admin.users.edit', $admin),
             route('admin.search', ['q' => mb_substr($member->full_name, 0, 4)]),
+            route('admin.ministries.show', Ministry::firstOrFail()),
+            route('admin.ministries.edit', Ministry::firstOrFail()),
+            route('admin.volunteer-applications.show', VolunteerApplication::firstOrFail()),
+            route('admin.campuses.show', Campus::firstOrFail()),
+            route('admin.campuses.edit', Campus::firstOrFail()),
+            route('admin.events.show', Event::firstOrFail()),
+            route('admin.events.edit', Event::firstOrFail()),
+            route('admin.events.check-in', Event::where('registration_enabled', true)->firstOrFail()),
+            route('admin.devotionals.edit', Devotional::firstOrFail()),
+            route('admin.sermons.edit', Sermon::firstOrFail()),
+            route('admin.prayer-requests.show', PrayerRequest::firstOrFail()),
+            route('admin.disciplers.tree', ['root' => $member->id]),
         ];
 
         foreach ($pages as $url) {
