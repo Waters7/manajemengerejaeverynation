@@ -78,7 +78,7 @@ class Settings
             return $all[$key];
         }
 
-        return $default ?? (self::defaults()[$key] ?? null);
+        return self::defaults()[$key] ?? $default;
     }
 
     /** @return array<string, string|null> */

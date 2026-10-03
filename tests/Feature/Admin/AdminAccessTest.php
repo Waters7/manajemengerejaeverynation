@@ -1,0 +1,130 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Enums\LifeGroupCategory;
+use App\Enums\Role;
+use App\Models\LifeGroup;
+use App\Models\Profile;
+use App\Models\User;
+use Database\Seeders\DemoSeeder;
+use Database\Seeders\ReferenceDataSeeder;
+use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\TestCase;
+
+class AdminAccessTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed([RolesAndPermissionsSeeder::class, ReferenceDataSeeder::class]);
+    }
+
+    private function userWithRole(Role $role): User
+    {
+        $user = User::factory()->create();
+        $user->assignRole($role->value);
+        Profile::factory()->create(['user_id' => $user->id, 'full_name' => $user->name]);
+
+        return $user->fresh();
+    }
+
+    private function groupLedBy(User $leader, string $name): LifeGroup
+    {
+        return LifeGroup::create([
+            'name' => $name,
+            'category' => LifeGroupCategory::Mixed,
+            'leader_profile_id' => $leader->profile->id,
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_guest_is_redirected_to_login(): void
+    {
+        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
+    }
+
+    public function test_plain_user_is_sent_to_member_dashboard(): void
+    {
+        $this->actingAs($this->userWithRole(Role::User))
+            ->get(route('admin.dashboard'))
+            ->assertRedirect(route('member.dashboard'));
+    }
+
+    public function test_leader_can_open_own_lifegroup_but_not_another(): void
+    {
+        $leader = $this->userWithRole(Role::Leader);
+        $other = $this->userWithRole(Role::Leader);
+        $own = $this->groupLedBy($leader, 'Own Group');
+        $foreign = $this->groupLedBy($other, 'Foreign Group');
+
+        $this->actingAs($leader)->get(route('admin.lifegroups.show', $own))->assertOk();
+        $this->actingAs($leader)->get(route('admin.lifegroups.show', $foreign))->assertForbidden();
+        $this->actingAs($leader)->get(route('admin.lifegroups.index'))->assertSee('Own Group')->assertDontSee('Foreign Group');
+    }
+
+    public function test_leader_cannot_view_a_person_outside_their_care(): void
+    {
+        $leader = $this->userWithRole(Role::Leader);
+        $stranger = Profile::factory()->create();
+
+        $this->actingAs($leader)->get(route('admin.members.show', $stranger))->assertForbidden();
+    }
+
+    public function test_leader_cannot_open_pastoral_care(): void
+    {
+        $this->actingAs($this->userWithRole(Role::Leader))
+            ->get(route('admin.pastoral-care.index'))
+            ->assertForbidden();
+    }
+
+    public function test_only_role_managers_can_change_roles(): void
+    {
+        $pastor = $this->userWithRole(Role::Pastor);
+        $target = $this->userWithRole(Role::User);
+
+        $this->actingAs($pastor)
+            ->put(route('admin.users.roles.update', $target), ['roles' => [Role::Leader->value]])
+            ->assertForbidden();
+
+        $this->assertFalse($target->fresh()->hasRole(Role::Leader->value));
+    }
+
+    public function test_role_change_is_written_to_the_audit_log(): void
+    {
+        $admin = $this->userWithRole(Role::SuperAdmin);
+        $target = $this->userWithRole(Role::User);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.roles.update', $target), ['roles' => [Role::Leader->value]])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue($target->fresh()->hasRole(Role::Leader->value));
+        $this->assertDatabaseHas('audit_logs', ['action' => 'role_change', 'auditable_id' => $target->id, 'user_id' => $admin->id]);
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function adminPages(): array
+    {
+        return collect([
+            'admin.dashboard', 'admin.members.index', 'admin.members.create', 'admin.newcomers.index', 'admin.involvement.index',
+            'admin.follow-ups.index', 'admin.lifegroups.index', 'admin.lifegroups.create', 'admin.join-requests.index',
+            'admin.meetings.index', 'admin.birthdays.index', 'admin.users.index', 'admin.roles.index', 'admin.notifications.index',
+        ])->mapWithKeys(fn ($route) => [$route => [$route]])->all();
+    }
+
+    #[DataProvider('adminPages')]
+    public function test_ministry_dashboard_pages_render_with_demo_data(string $route): void
+    {
+        $this->seed(DemoSeeder::class);
+        $admin = User::role(Role::SuperAdmin->value)->first() ?? $this->userWithRole(Role::SuperAdmin);
+
+        $this->actingAs($admin)->get(route($route))->assertOk();
+    }
+}
