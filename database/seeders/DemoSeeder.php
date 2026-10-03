@@ -49,11 +49,15 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
- * Local demo data so every dashboard has something meaningful to show.
- * All demo accounts use the password "password".
+ * Demo data so every dashboard has something meaningful to show.
+ *
+ * Demo accounts use DEMO_PASSWORD from .env. Locally it falls back to "password";
+ * in production DEMO_PASSWORD is required so no account is created with a known password.
  */
 class DemoSeeder extends Seeder
 {
+    private string $password = 'password';
+
     public function run(JourneyService $journey, LifeGroupService $lifeGroups, ClassService $classes, VolunteerService $volunteers): void
     {
         if (Profile::count() > 5) {
@@ -61,6 +65,14 @@ class DemoSeeder extends Seeder
 
             return;
         }
+
+        $configured = env('DEMO_PASSWORD');
+        if (app()->isProduction() && (blank($configured) || strlen($configured) < 10)) {
+            $this->command?->warn('Demo data skipped: set DEMO_PASSWORD (min. 10 characters) in .env to seed demo accounts in production.');
+
+            return;
+        }
+        $this->password = $configured ?: 'password';
 
         $campuses = collect(['President University', 'Universitas Bhayangkara Jakarta Raya', 'Universitas Gunadarma Bekasi'])
             ->map(fn ($name, $i) => Campus::create(['name' => $name, 'short_name' => ['PresUniv', 'Ubhara', 'Gunadarma'][$i], 'is_active' => true]));
@@ -280,7 +292,7 @@ class DemoSeeder extends Seeder
     {
         $user = User::create([
             'name' => $name, 'nickname' => $nickname, 'email' => $email, 'whatsapp' => '628'.fake()->numerify('##########'),
-            'password' => 'password', 'account_status' => AccountStatus::Active, 'email_verified_at' => now(),
+            'password' => $this->password, 'account_status' => AccountStatus::Active, 'email_verified_at' => now(),
         ]);
         $user->assignRole($role->value);
         $user->profile()->create([

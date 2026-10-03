@@ -27,7 +27,7 @@ Hak akses data diterapkan terpusat oleh `App\Services\AccessScope` (leader hanya
 
 ## Kebutuhan
 
-- PHP 8.3+ (ekstensi `pdo_mysql`, `gd`, `intl`, `zip`, `fileinfo`)
+- PHP 8.4+ (ekstensi `pdo_mysql`, `gd`, `intl`, `zip`, `fileinfo`, `mbstring`, `bcmath`, `sodium`)
 - Composer 2
 - Node.js 20+
 - MySQL 8 / MariaDB 10.6+
@@ -65,3 +65,7 @@ php artisan schedule:work
 ```bash
 php artisan test
 ```
+
+## Deploy ke cPanel (Biznet Gio NEO Web Hosting)
+
+Jalankan `powershell -ExecutionPolicy Bypass -File deploy\make-release.ps1` untuk membuat `deploy\release\everynation.zip` (aplikasi, diekstrak di luar `public_html`) dan `deploy\release\public_html.zip` (aset publik + `index.php`). Contoh `.env` production ada di `deploy/biznet/env.production.example`. Data contoh (seeder demo) ikut dibuat bila `SEED_DEMO=true` dan `DEMO_PASSWORD` diisi.

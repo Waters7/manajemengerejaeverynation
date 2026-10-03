@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Process the queue from the scheduler (shared hosting)
+    |--------------------------------------------------------------------------
+    |
+    | Shared hosting (e.g. cPanel) cannot keep `queue:work` running. When true,
+    | the scheduler (cron every minute) processes pending jobs and then stops.
+    |
+    */
+
+    'run_via_scheduler' => (bool) env('QUEUE_VIA_SCHEDULER', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue Connections
     |--------------------------------------------------------------------------
     |
