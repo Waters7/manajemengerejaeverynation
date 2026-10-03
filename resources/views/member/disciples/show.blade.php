@@ -11,6 +11,7 @@
 
             <div class="card card-pad">
                 <h2 class="font-extrabold uppercase">4E journey</h2>
+                <div class="mt-4">@include('partials.baptism', ['profile' => $profile, 'action' => route('member.disciples.baptism', $profile)])</div>
                 <div class="mt-4">@include('partials.journey', ['stages' => $stages])</div>
                 <form method="POST" action="{{ route('member.disciples.programs.store', $profile) }}" class="mt-6 flex flex-wrap items-end gap-3 border-t border-line pt-5">
                     @csrf

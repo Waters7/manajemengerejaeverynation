@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\AccountStatus;
+use App\Enums\BaptismStatus;
 use App\Enums\ContactType;
 use App\Enums\DiscoverySource;
 use App\Enums\FollowUpCategory;
@@ -49,7 +50,8 @@ class MemberController extends Controller
             ->when($request->filled('status'), fn ($q) => $q->where('member_status', $request->string('status')))
             ->when($request->filled('stage'), fn ($q) => $q->where('current_stage_id', $request->integer('stage')))
             ->when($request->filled('campus'), fn ($q) => $q->where('campus_id', $request->integer('campus')))
-            ->when($request->filled('lifegroup'), fn ($q) => $q->whereHas('lifeGroupMemberships', fn ($m) => $m->where('life_group_id', $request->integer('lifegroup'))->where('status', 'active')))
+            ->when($request->filled('lifegroup') && $request->input('lifegroup') !== 'none', fn ($q) => $q->whereHas('lifeGroupMemberships', fn ($m) => $m->where('life_group_id', $request->integer('lifegroup'))->where('status', 'active')))
+            ->when($request->filled('baptism'), fn ($q) => $q->where('baptism_status', $request->string('baptism')))
             ->when($request->input('lifegroup') === 'none', fn ($q) => $q->whereDoesntHave('lifeGroupMemberships', fn ($m) => $m->where('status', 'active')))
             ->when($request->input('needs') === 'discipler', fn ($q) => $q->whereIn('member_status', [MemberStatus::Connected->value, MemberStatus::Member->value])
                 ->whereDoesntHave('disciplerRelationships', fn ($r) => $r->where('status', 'active')))
@@ -60,6 +62,7 @@ class MemberController extends Controller
         return view('admin.members.index', [
             'people' => $people,
             'statuses' => MemberStatus::options(),
+            'baptismStatuses' => BaptismStatus::options(),
             'stages' => DiscipleshipStage::ordered()->pluck('name', 'id'),
             'campuses' => Campus::orderBy('name')->pluck('name', 'id'),
             'lifeGroups' => $this->scope->lifeGroups(LifeGroup::active(), $user)->orderBy('name')->pluck('name', 'id')->prepend('— Not in a LifeGroup —', 'none'),

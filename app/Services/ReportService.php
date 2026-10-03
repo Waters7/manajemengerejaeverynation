@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\BaptismStatus;
 use App\Enums\InvolvementStatus;
 use App\Enums\LeadershipStage;
 use App\Enums\ParticipantStatus;
@@ -47,6 +48,7 @@ class ReportService
             'lifegroup-growth' => ['title' => 'LifeGroup growth', 'description' => 'Members and new joiners per LifeGroup.', 'filters' => ['date', 'campus', 'leader']],
             'lifegroup-attendance' => ['title' => 'LifeGroup attendance', 'description' => 'Meetings held and average attendance per LifeGroup.', 'filters' => ['date', 'campus', 'lifegroup', 'leader']],
             'discipleship-stage' => ['title' => 'Discipleship stage', 'description' => 'People per 4E stage and program in progress.', 'filters' => ['campus', 'lifegroup', 'stage']],
+            'baptism' => ['title' => 'Water baptism', 'description' => 'Baptisms per month and baptism status per 4E stage.', 'filters' => ['date', 'campus', 'lifegroup']],
             'curriculum-completion' => ['title' => 'Curriculum completion', 'description' => 'Program starts and completions in the period.', 'filters' => ['date', 'program', 'stage']],
             'victory-weekend' => ['title' => 'Victory Weekend', 'description' => 'Participants, attendance and completion per weekend.', 'filters' => ['date']],
             'classes' => ['title' => 'Classes', 'description' => 'Class batches, participants and completion rate.', 'filters' => ['date', 'program', 'campus']],
@@ -73,6 +75,7 @@ class ReportService
             'lifegroup-growth' => $this->lifeGroupGrowth($user, $filters, $from, $to),
             'lifegroup-attendance' => $this->lifeGroupAttendance($user, $filters, $from, $to),
             'discipleship-stage' => $this->discipleshipStage($user, $filters),
+            'baptism' => $this->baptism($user, $filters, $from, $to),
             'curriculum-completion' => $this->curriculumCompletion($user, $filters, $from, $to),
             'victory-weekend' => $this->victoryWeekend($user, $from, $to),
             'classes' => $this->classes($user, $filters, $from, $to),
@@ -199,6 +202,30 @@ class ReportService
             ->values();
 
         return ['columns' => ['Stage', 'Program', 'In progress', 'Completed (all time)', 'Currently here'], 'rows' => $rows, 'bar' => 4];
+    }
+
+    private function baptism(User $user, array $filters, Carbon $from, Carbon $to): array
+    {
+        $people = $this->people($user, $filters)->get(['id', 'baptism_status', 'baptism_date', 'current_stage_id']);
+        $baptized = $people->filter(fn (Profile $p) => $p->isBaptized());
+
+        $monthly = $this->months($from, $to)->map(fn (Carbon $month) => [
+            $month->translatedFormat('M Y'),
+            'Baptized in month',
+            $baptized->filter(fn (Profile $p) => $p->baptism_date?->isSameMonth($month))->count(),
+        ]);
+
+        $stages = DiscipleshipStage::ordered()->get()->map(function (DiscipleshipStage $stage) use ($people) {
+            $inStage = $people->where('current_stage_id', $stage->id);
+
+            return [$stage->name, 'Baptized / in stage', $inStage->filter(fn (Profile $p) => $p->isBaptized())->count().' / '.$inStage->count()];
+        });
+
+        $totals = collect(BaptismStatus::cases())->map(fn (BaptismStatus $status) => [
+            'All people', $status->label(), $people->where('baptism_status', $status)->count(),
+        ]);
+
+        return ['columns' => ['Period / group', 'Measure', 'People'], 'rows' => $monthly->concat($totals)->concat($stages)->values(), 'bar' => 2];
     }
 
     private function curriculumCompletion(User $user, array $filters, Carbon $from, Carbon $to): array

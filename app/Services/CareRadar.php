@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\BaptismStatus;
 use App\Enums\BatchStatus;
 use App\Enums\InvolvementStatus;
 use App\Enums\JoinRequestStatus;
@@ -87,6 +88,15 @@ class CareRadar
                 $this->quietProgress($user, $one2oneId, 30, false),
                 route('admin.journey.index', ['quiet' => 1]),
                 fn (MemberProgramProgress $p) => ['title' => $p->profile->full_name, 'meta' => $p->program->name.' · '.($p->last_activity_at?->diffForHumans() ?? '—'), 'urgent' => false, 'url' => route('admin.members.show', $p->profile_id)]);
+
+            // People who finished One 2 One and have not been baptized yet — a good moment to talk about it.
+            $add('baptism', 'Ready to talk about baptism', 'Completed One 2 One, not baptized yet',
+                $this->scope->profiles(Profile::query()
+                    ->where('baptism_status', BaptismStatus::NotYet->value)
+                    ->whereHas('programProgress', fn ($q) => $q->where('discipleship_program_id', $one2oneId ?? 0)->where('status', ProgressStatus::Completed->value)), $user)
+                    ->orderBy('full_name'),
+                route('admin.journey.index', ['baptism' => BaptismStatus::NotYet->value, 'program' => $one2oneId, 'status' => ProgressStatus::Completed->value]),
+                fn (Profile $p) => ['title' => $p->full_name, 'meta' => $p->currentProgram?->name ?? 'One 2 One completed', 'urgent' => false, 'url' => route('admin.members.show', $p).'#discipleship']);
         }
 
         if ($user->can('classes.view')) {

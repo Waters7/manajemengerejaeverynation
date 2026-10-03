@@ -135,6 +135,16 @@ class DemoSeeder extends Seeder
             }
         }
 
+        // Water baptism: most people past One 2 One are baptized, a few are scheduled
+        foreach ($people as $i => $person) {
+            if ($i % count($programs) === 0) {
+                continue;
+            }
+            $journey->recordBaptism($person, $i % 7 === 0
+                ? ['baptism_status' => 'scheduled', 'baptism_date' => now()->next('Sunday')->addWeeks(2)->toDateString(), 'baptism_place' => 'Every Nation Bekasi']
+                : ['baptism_status' => 'baptized', 'baptism_date' => now()->subMonths(rand(2, 30))->toDateString(), 'baptism_place' => $i % 5 ? 'Every Nation Bekasi' : 'Gereja sebelumnya']);
+        }
+
         // Member Sarah: Establish → Purple Book 7/12, like the example in the brief
         foreach ($programs as $program) {
             $progress = $journey->startProgram($member->profile, $program, $leaderA->profile, now()->subMonths(8)->toDateString());

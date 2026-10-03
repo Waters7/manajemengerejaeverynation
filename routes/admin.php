@@ -55,6 +55,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('one2one', [Admin\One2OneController::class, 'index'])->name('one2one.index');
         Route::post('one2one', [Admin\One2OneController::class, 'store'])->name('one2one.store');
         Route::post('members/{profile}/programs', [Admin\ProgressController::class, 'store'])->name('progress.store');
+        Route::patch('members/{profile}/baptism', [Admin\ProgressController::class, 'baptism'])->name('members.baptism');
         Route::get('progress/{progress}', [Admin\ProgressController::class, 'show'])->name('progress.show');
         Route::patch('progress/{progress}', [Admin\ProgressController::class, 'update'])->name('progress.update');
         Route::put('progress/{progress}/chapters/{chapter}', [Admin\ProgressController::class, 'chapter'])->name('progress.chapter');

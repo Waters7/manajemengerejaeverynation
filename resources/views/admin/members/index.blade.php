@@ -9,6 +9,7 @@
         <x-form.input name="q" type="search" label="Search" :value="request('q')" placeholder="Name, WhatsApp, email" class="min-w-56 grow" />
         <x-form.select name="status" label="Status" :options="$statuses" :value="request('status')" placeholder="All" />
         <x-form.select name="stage" label="Stage" :options="$stages" :value="request('stage')" placeholder="All" />
+        <x-form.select name="baptism" label="Baptism" :options="$baptismStatuses" :value="request('baptism')" placeholder="All" />
         <x-form.select name="lifegroup" label="LifeGroup" :options="$lifeGroups" :value="request('lifegroup')" placeholder="All" />
         @if ($campuses->isNotEmpty())
             <x-form.select name="campus" label="Campus" :options="$campuses" :value="request('campus')" placeholder="All" />
@@ -38,7 +39,10 @@
                         </td>
                         <td class="whitespace-nowrap">{{ \App\Services\WhatsApp::display($person->whatsapp) ?: '—' }}</td>
                         <td>{{ $person->activeLifeGroups->first()?->name ?? '—' }}</td>
-                        <td>{{ $person->currentStage?->name ?? '—' }}</td>
+                        <td>
+                            {{ $person->currentStage?->name ?? '—' }}
+                            @if ($person->isBaptized())<span class="block text-xs text-success">Baptized</span>@endif
+                        </td>
                         <td><x-badge :value="$person->member_status" /></td>
                         <td class="whitespace-nowrap text-muted">{{ $person->join_date?->translatedFormat('M Y') ?? '—' }}</td>
                     </tr>

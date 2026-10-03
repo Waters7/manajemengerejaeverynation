@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Member;
 use App\Enums\ContactType;
 use App\Enums\ProgressStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BaptismRequest;
 use App\Http\Requests\DiscipleshipMeetingRequest;
 use App\Models\CurriculumChapter;
 use App\Models\DisciplerRelationship;
@@ -95,6 +96,14 @@ class DiscipleController extends Controller
         $journey->startProgram($profile, DiscipleshipProgram::findOrFail($data['program_id']), $request->user()->profile, null, $data['expected_completion_at'] ?? null);
 
         return back()->with('status', 'Program started.');
+    }
+
+    public function baptism(BaptismRequest $request, Profile $profile, JourneyService $journey): RedirectResponse
+    {
+        $this->authorize('disciple', $profile);
+        $journey->recordBaptism($profile, $request->validated());
+
+        return back()->with('status', 'Baptism status updated.');
     }
 
     public function chapter(Request $request, Profile $profile, MemberProgramProgress $progress, CurriculumChapter $chapter, JourneyService $journey): RedirectResponse

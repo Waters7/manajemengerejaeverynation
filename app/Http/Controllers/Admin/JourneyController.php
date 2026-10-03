@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\BaptismStatus;
 use App\Enums\ProgressStatus;
 use App\Http\Controllers\Controller;
 use App\Models\DiscipleshipProgram;
@@ -30,6 +31,7 @@ class JourneyController extends Controller
             ->when($request->filled('stage'), fn ($q) => $q->whereHas('program', fn ($p) => $p->where('discipleship_stage_id', $request->integer('stage'))))
             ->when($request->filled('program'), fn ($q) => $q->where('discipleship_program_id', $request->integer('program')))
             ->when($request->filled('discipler'), fn ($q) => $q->where('discipler_profile_id', $request->integer('discipler')))
+            ->when($request->filled('baptism'), fn ($q) => $q->whereHas('profile', fn ($p) => $p->where('baptism_status', $request->string('baptism'))))
             ->when($request->input('status', 'in_progress') !== 'all', fn ($q) => $q->where('status', $request->input('status', 'in_progress')))
             ->when($quiet, fn ($q) => $q->where(fn ($w) => $w->whereNull('last_activity_at')->orWhere('last_activity_at', '<', now()->subDays(30))))
             ->orderByRaw('next_follow_up_at is null')
@@ -44,6 +46,9 @@ class JourneyController extends Controller
             'stages' => DiscipleshipStage::ordered()->pluck('name', 'id'),
             'programs' => DiscipleshipProgram::active()->orderBy('sequence')->pluck('name', 'id'),
             'statuses' => ProgressStatus::options() + ['all' => 'All'],
+            'baptismStatuses' => BaptismStatus::options(),
+            'baptismCounts' => $scope->profiles(Profile::query(), $user)->members()
+                ->selectRaw('baptism_status, count(*) as total')->groupBy('baptism_status')->pluck('total', 'baptism_status'),
             'disciplers' => Profile::whereIn('id', MemberProgramProgress::whereNotNull('discipler_profile_id')->select('discipler_profile_id'))->orderBy('full_name')->pluck('full_name', 'id'),
         ]);
     }

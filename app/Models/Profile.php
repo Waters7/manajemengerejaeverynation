@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BaptismStatus;
 use App\Enums\Gender;
 use App\Enums\LifeGroupRole;
 use App\Enums\LifeStage;
@@ -30,6 +31,7 @@ class Profile extends Model
         'user_id', 'full_name', 'nickname', 'gender', 'birth_date', 'whatsapp', 'email', 'address', 'area',
         'occupation', 'company', 'campus_id', 'school_name', 'life_stage', 'photo_path', 'join_date',
         'first_visit_date', 'source', 'member_status', 'current_stage_id', 'current_program_id', 'created_by',
+        'baptism_status', 'baptism_date', 'baptism_place', 'baptism_notes',
     ];
 
     protected function casts(): array
@@ -41,7 +43,14 @@ class Profile extends Model
             'gender' => Gender::class,
             'life_stage' => LifeStage::class,
             'member_status' => MemberStatus::class,
+            'baptism_status' => BaptismStatus::class,
+            'baptism_date' => 'date',
         ];
+    }
+
+    public function isBaptized(): bool
+    {
+        return $this->baptism_status === BaptismStatus::Baptized;
     }
 
     // ── Relationships ──────────────────────────────────────────────

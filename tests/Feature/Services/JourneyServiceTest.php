@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Services;
 
+use App\Enums\BaptismStatus;
 use App\Enums\ProgressStatus;
 use App\Models\DiscipleshipProgram;
 use App\Models\Profile;
@@ -96,6 +97,32 @@ class JourneyServiceTest extends TestCase
 
         $this->assertSame($second->id, $disciple->activeDiscipler()->first()->discipler_profile_id);
         $this->assertSame(1, $disciple->disciplerRelationships()->where('status', 'ended')->count());
+    }
+
+    public function test_recording_a_baptism_adds_a_timeline_milestone_once(): void
+    {
+        $profile = Profile::factory()->create();
+
+        $this->journey->recordBaptism($profile, ['baptism_status' => 'baptized', 'baptism_date' => '2026-05-10', 'baptism_place' => 'Every Nation Bekasi']);
+        $this->journey->recordBaptism($profile->fresh(), ['baptism_status' => 'baptized', 'baptism_date' => '2026-05-10', 'baptism_place' => 'Every Nation Bekasi']);
+
+        $profile->refresh();
+        $this->assertTrue($profile->isBaptized());
+        $this->assertSame('2026-05-10', $profile->baptism_date->toDateString());
+        $this->assertSame(1, $profile->timeline()->where('type', 'baptism')->count());
+    }
+
+    public function test_resetting_to_not_yet_clears_date_and_place(): void
+    {
+        $profile = Profile::factory()->create();
+        $this->journey->recordBaptism($profile, ['baptism_status' => 'scheduled', 'baptism_date' => now()->addWeek()->toDateString(), 'baptism_place' => 'ENB']);
+
+        $this->journey->recordBaptism($profile->fresh(), ['baptism_status' => 'not_yet']);
+
+        $profile->refresh();
+        $this->assertSame(BaptismStatus::NotYet, $profile->baptism_status);
+        $this->assertNull($profile->baptism_date);
+        $this->assertNull($profile->baptism_place);
     }
 
     public function test_tree_contains_multiple_generations(): void

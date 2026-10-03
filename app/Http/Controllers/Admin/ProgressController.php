@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\ProgressStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BaptismRequest;
 use App\Models\CurriculumChapter;
 use App\Models\DiscipleshipProgram;
 use App\Models\MemberProgramProgress;
@@ -36,6 +37,15 @@ class ProgressController extends Controller
             : '';
 
         return redirect()->route('admin.progress.show', $progress)->with('status', "{$program->name} started.{$warning}");
+    }
+
+    /** Water baptism status, recorded by the discipler or the discipleship team. */
+    public function baptism(BaptismRequest $request, Profile $profile, JourneyService $journey): RedirectResponse
+    {
+        $this->authorize('disciple', $profile);
+        $journey->recordBaptism($profile, $request->validated());
+
+        return back()->with('status', 'Baptism status updated.');
     }
 
     public function show(Request $request, MemberProgramProgress $progress, AccessScope $scope): View

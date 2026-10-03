@@ -81,6 +81,35 @@ class DiscipleshipManagementTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_discipler_can_record_a_disciples_baptism_but_not_a_strangers(): void
+    {
+        $discipler = $this->userWithRole(Role::User);
+        $disciple = Profile::factory()->create();
+        $stranger = Profile::factory()->create();
+        app(JourneyService::class)->assignDiscipler($disciple, $discipler->profile);
+        $payload = ['baptism_status' => 'baptized', 'baptism_date' => today()->subWeek()->toDateString(), 'baptism_place' => 'Every Nation Bekasi'];
+
+        $this->actingAs($discipler)->patch(route('member.disciples.baptism', $disciple), $payload)->assertSessionHasNoErrors();
+        $this->actingAs($discipler)->patch(route('member.disciples.baptism', $stranger), $payload)->assertForbidden();
+
+        $this->assertTrue($disciple->fresh()->isBaptized());
+        $this->assertFalse($stranger->fresh()->isBaptized());
+    }
+
+    public function test_scheduled_baptism_requires_a_future_date(): void
+    {
+        $pastor = $this->userWithRole(Role::Pastor);
+        $profile = Profile::factory()->create();
+
+        $this->actingAs($pastor)
+            ->patch(route('admin.members.baptism', $profile), ['baptism_status' => 'scheduled'])
+            ->assertSessionHasErrors('baptism_date');
+
+        $this->actingAs($pastor)
+            ->patch(route('admin.members.baptism', $profile), ['baptism_status' => 'baptized', 'baptism_date' => today()->addDay()->toDateString()])
+            ->assertSessionHasErrors('baptism_date');
+    }
+
     public function test_plain_member_who_disciples_someone_can_update_their_progress_but_not_strangers(): void
     {
         $discipler = $this->userWithRole(Role::User);

@@ -64,6 +64,7 @@
                             'Discipler' => $profile->activeDiscipler?->discipler?->full_name,
                             'Current stage' => $profile->currentStage?->name,
                             'Current program' => $profile->currentProgram?->name,
+                            'Water baptism' => $profile->baptism_status?->label().($profile->baptism_date ? ' · '.$profile->baptism_date->translatedFormat('j M Y') : ''),
                             'Ministry' => $profile->ministryMemberships->map(fn ($m) => $m->ministry->name)->implode(', '),
                         ] as $term => $detail)
                             <div><dt class="text-xs font-bold tracking-wider text-muted uppercase">{{ $term }}</dt><dd class="mt-0.5 font-semibold text-ink">{{ filled($detail) ? $detail : '—' }}</dd></div>
@@ -194,6 +195,7 @@
                 @endif
                 <div class="card card-pad">
                     <h2 class="font-extrabold uppercase">4E journey</h2>
+                    <div class="mt-4">@include('partials.baptism', ['profile' => $profile, 'action' => route('admin.members.baptism', $profile)])</div>
                     <div class="mt-4">@include('partials.journey', ['stages' => $stages, 'progressLink' => fn ($p) => route('admin.progress.show', $p)])</div>
                     @if ($canDisciple)
                         <form method="POST" action="{{ route('admin.progress.store', $profile) }}" class="mt-6 grid gap-3 border-t border-line pt-5 sm:grid-cols-4 sm:items-end">

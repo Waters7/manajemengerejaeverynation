@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\BaptismStatus;
 use App\Enums\NewcomerJourney;
 use App\Enums\ProgramType;
 use App\Enums\ProgressStatus;
@@ -200,6 +201,43 @@ class JourneyService
                 ];
             }),
         ]);
+    }
+
+    // ── Water baptism ──────────────────────────────────────────────
+
+    /**
+     * Record a person's water baptism status. Becoming baptized is a journey milestone on the timeline.
+     *
+     * @param  array{baptism_status: string, baptism_date?: ?string, baptism_place?: ?string, baptism_notes?: ?string}  $data
+     */
+    public function recordBaptism(Profile $profile, array $data): Profile
+    {
+        return DB::transaction(function () use ($profile, $data) {
+            $status = BaptismStatus::from($data['baptism_status']);
+            $wasBaptized = $profile->isBaptized();
+
+            $profile->update([
+                'baptism_status' => $status,
+                'baptism_date' => $status === BaptismStatus::NotYet ? null : ($data['baptism_date'] ?? $profile->baptism_date),
+                'baptism_place' => $status === BaptismStatus::NotYet ? null : ($data['baptism_place'] ?? $profile->baptism_place),
+                'baptism_notes' => $data['baptism_notes'] ?? $profile->baptism_notes,
+            ]);
+
+            if ($status === BaptismStatus::Baptized && ! $wasBaptized) {
+                $this->timeline->record(
+                    $profile,
+                    'baptism',
+                    'Water baptism',
+                    $profile->baptism_place,
+                    null,
+                    $profile->baptism_date ?? now(),
+                );
+            } elseif ($status === BaptismStatus::Scheduled && $profile->wasChanged('baptism_status')) {
+                $this->timeline->record($profile, 'baptism_scheduled', 'Water baptism scheduled', $profile->baptism_date?->translatedFormat('j F Y'));
+            }
+
+            return $profile;
+        });
     }
 
     // ── Discipler relationships ────────────────────────────────────

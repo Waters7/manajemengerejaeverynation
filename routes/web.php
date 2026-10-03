@@ -83,5 +83,6 @@ Route::middleware('auth')->prefix('my')->name('member.')->group(function () {
     Route::post('/disciples/{profile}/meetings', [Member\DiscipleController::class, 'meeting'])->name('disciples.meetings.store');
     Route::post('/disciples/{profile}/notes', [Member\DiscipleController::class, 'note'])->name('disciples.notes.store');
     Route::post('/disciples/{profile}/programs', [Member\DiscipleController::class, 'startProgram'])->name('disciples.programs.store');
+    Route::patch('/disciples/{profile}/baptism', [Member\DiscipleController::class, 'baptism'])->name('disciples.baptism');
     Route::put('/disciples/{profile}/progress/{progress}/chapters/{chapter}', [Member\DiscipleController::class, 'chapter'])->name('disciples.chapters.update');
 });

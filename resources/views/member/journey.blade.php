@@ -10,6 +10,7 @@
                     <div><dt class="text-xs font-bold tracking-wider text-muted uppercase">Discipler</dt><dd class="mt-1 text-lg font-extrabold">{{ $discipler?->discipler?->displayName() ?? '—' }}</dd></div>
                 </dl>
             </div>
+            @include('partials.baptism', ['profile' => $profile])
             @include('partials.journey', ['stages' => $stages])
         </div>
         <div class="card card-pad h-fit">
