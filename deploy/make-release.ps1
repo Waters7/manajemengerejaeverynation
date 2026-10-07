@@ -82,8 +82,10 @@ Invoke-Step 'Preparing public_html' {
 
 Invoke-Step 'Creating archives' {
     Remove-Item (Join-Path $release '*.zip') -ErrorAction SilentlyContinue
-    tar -a -c -f (Join-Path $release "$AppFolder.zip") -C $stage $AppFolder
-    tar -a -c -f (Join-Path $release 'public_html.zip') -C $publicHtml .
+    # Windows' bsdtar writes real .zip files; a Git Bash tar earlier on PATH cannot.
+    $tar = Join-Path $env:SystemRoot 'System32\tar.exe'
+    & $tar -a -c -f (Join-Path $release "$AppFolder.zip") -C $stage $AppFolder
+    & $tar -a -c -f (Join-Path $release 'public_html.zip') -C $publicHtml .
 }
 
 Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
