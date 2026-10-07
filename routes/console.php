@@ -30,6 +30,11 @@ Schedule::call($artisan('church:follow-up-digest'))
     ->weekdays()
     ->at('07:00');
 
+Schedule::call($artisan('store:cancel-unpaid'))
+    ->name('store:cancel-unpaid')
+    ->hourly()
+    ->withoutOverlapping();
+
 Schedule::call($artisan('queue:prune-failed', ['--hours' => 168]))
     ->name('queue:prune-failed')
     ->weekly();

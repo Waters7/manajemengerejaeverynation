@@ -9,6 +9,7 @@ use App\Models\Devotional;
 use App\Models\Event;
 use App\Models\Gallery;
 use App\Models\Page;
+use App\Models\Product;
 use App\Models\Sermon;
 use App\Services\AuditLogger;
 use Illuminate\Console\Command;
@@ -21,18 +22,18 @@ class PublishScheduledContent extends Command
 {
     protected $signature = 'church:publish-scheduled';
 
-    protected $description = 'Publish scheduled devotionals, sermons, events, galleries, pages and announcements';
+    protected $description = 'Publish scheduled devotionals, sermons, events, galleries, pages, announcements and store products';
 
     public function handle(AuditLogger $audit): int
     {
         $published = 0;
 
-        foreach ([Devotional::class, Sermon::class, Event::class, Gallery::class, Page::class, Announcement::class] as $model) {
+        foreach ([Devotional::class, Sermon::class, Event::class, Gallery::class, Page::class, Announcement::class, Product::class] as $model) {
             $model::where('status', ContentStatus::Scheduled->value)
                 ->where('published_at', '<=', now())
                 ->each(function ($item) use ($audit, &$published) {
                     $item->update(['status' => ContentStatus::Published]);
-                    $audit->log(AuditAction::Publish, $item, 'Scheduled content published: '.($item->title ?? $item->getKey()));
+                    $audit->log(AuditAction::Publish, $item, 'Scheduled content published: '.($item->title ?? $item->name ?? $item->getKey()));
                     $published++;
                 });
         }

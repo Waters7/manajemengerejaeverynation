@@ -10,6 +10,7 @@
         ['Serving', 'member.serving', 'hand'],
         ['Certificates', 'member.certificates', 'star'],
         ['Prophetic Words', 'member.prophetic-words', 'music'],
+        ['My Orders', 'member.orders', 'bag'],
     ];
     if ($user->profile?->discipleRelationships()->where('status', 'active')->exists()) {
         $links[] = ['My Disciples', 'member.disciples', 'tree'];

@@ -22,6 +22,7 @@ Website publik + Church Management & Discipleship System untuk Every Nation Beka
 | 3 | Leadership Pipeline (approval hanya oleh pastor) · Ministries · Volunteers · Volunteer Applications · Serving Schedule · Campus Ministry (scope per kampus) |
 | 4 | Devotionals · Sermons (series, key points, YouTube/Spotify) · Events (registrasi, kapasitas, waiting list, QR ticket, check-in) · Gallery (multi upload WebP + lightbox) · Pages & Homepage CMS |
 | 5 | Prayer Requests (visibility pastor/leader/prayer team, terenkripsi) · Pastoral Care (restricted, terenkripsi) · Announcements · Birthdays · 13 Reports + export Excel/CSV · Audit Log · Settings & template WhatsApp · Media library · Otomasi scheduler |
+| + | **Store** buku & merchandise (`/store`): katalog, varian ukuran/stok, keranjang, checkout (ambil di gereja / dikirim, transfer bank / bayar saat ambil), upload bukti bayar, auto-cancel pesanan belum dibayar · My Orders · admin STORE (Orders, Products, Categories, Store Settings) · laporan Store sales |
 
 Hak akses data diterapkan terpusat oleh `App\Services\AccessScope` (leader hanya LifeGroup & disciples-nya, campus ministry hanya kampusnya, coordinator hanya ministry-nya) dan diperiksa ulang di Policies.
 

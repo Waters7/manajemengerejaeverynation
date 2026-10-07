@@ -36,6 +36,20 @@ Route::get('/sermons/{sermon:slug}', [Site\SermonController::class, 'show'])->na
 Route::get('/gallery', [Site\GalleryController::class, 'index'])->name('gallery.index');
 Route::get('/gallery/{gallery:slug}', [Site\GalleryController::class, 'show'])->name('gallery.show');
 
+Route::prefix('store')->name('store.')->group(function () {
+    Route::get('/', [Site\StoreController::class, 'index'])->name('index');
+    Route::get('/cart', [Site\CartController::class, 'show'])->name('cart');
+    Route::post('/cart', [Site\CartController::class, 'add'])->name('cart.add');
+    Route::patch('/cart/{key}', [Site\CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{key}', [Site\CartController::class, 'remove'])->name('cart.remove');
+    Route::get('/checkout', [Site\CheckoutController::class, 'create'])->name('checkout');
+    Route::post('/checkout', [Site\CheckoutController::class, 'store'])->middleware('throttle:public-forms')->name('checkout.store');
+    Route::get('/orders/{order}/{token}', [Site\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/{token}/proof', [Site\OrderController::class, 'proof'])->middleware('throttle:public-forms')->name('orders.proof');
+    Route::post('/orders/{order}/{token}/cancel', [Site\OrderController::class, 'cancel'])->middleware('throttle:public-forms')->name('orders.cancel');
+    Route::get('/{product:slug}', [Site\StoreController::class, 'show'])->name('show');
+});
+
 Route::get('/get-involved', [Site\GetInvolvedController::class, 'create'])->name('get-involved');
 Route::post('/get-involved', [Site\GetInvolvedController::class, 'store'])->middleware('throttle:public-forms')->name('get-involved.store');
 Route::get('/get-involved/thank-you', [Site\GetInvolvedController::class, 'thanks'])->name('get-involved.thanks');
@@ -95,6 +109,7 @@ Route::middleware('auth')->prefix('my')->name('member.')->group(function () {
     Route::get('/serving', Member\ServingController::class)->name('serving');
     Route::get('/certificates', Member\CertificateController::class)->name('certificates');
     Route::get('/prophetic-words', Member\PropheticWordController::class)->name('prophetic-words');
+    Route::get('/orders', Member\OrderController::class)->name('orders');
     Route::get('/disciples', [Member\DiscipleController::class, 'index'])->name('disciples');
     Route::get('/disciples/{profile}', [Member\DiscipleController::class, 'show'])->name('disciples.show');
     Route::post('/disciples/{profile}/meetings', [Member\DiscipleController::class, 'meeting'])->name('disciples.meetings.store');

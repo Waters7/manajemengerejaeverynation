@@ -44,6 +44,12 @@
             ['Gallery', 'admin.galleries.index', 'admin.galleries.*', 'photo', 'content.manage'],
             ['Pages', 'admin.pages.index', 'admin.pages.*', 'document', 'content.manage'],
         ],
+        'Store' => [
+            ['Orders', 'admin.orders.index', 'admin.orders.*', 'cart', 'orders.manage'],
+            ['Products', 'admin.store.products.index', 'admin.store.products.*', 'bag', 'store.manage'],
+            ['Categories', 'admin.store.categories.index', 'admin.store.categories.*', 'tag', 'store.manage'],
+            ['Store Settings', 'admin.store.settings.edit', 'admin.store.settings.*', 'cog', 'store.manage'],
+        ],
         'Care' => [
             ['Prayer Requests', 'admin.prayer-requests.index', 'admin.prayer-requests.*', 'pray', 'prayer.view'],
             ['Pastoral Care', 'admin.pastoral-care.index', 'admin.pastoral-care.*', 'heart', 'pastoral.view'],

@@ -25,12 +25,12 @@ class ReportController extends Controller
 
     public function index(): View
     {
-        return view('admin.reports.index', ['catalog' => ReportService::catalog()]);
+        return view('admin.reports.index', ['catalog' => ReportService::catalogFor(request()->user())]);
     }
 
     public function show(Request $request, string $report, AccessScope $scope): View
     {
-        $definition = ReportService::catalog()[$report] ?? abort(404);
+        $definition = ReportService::catalogFor($request->user())[$report] ?? abort(404);
         $filters = $this->filters($request);
         $result = $this->reports->run($report, $request->user(), $filters);
         $user = $request->user();
@@ -59,7 +59,7 @@ class ReportController extends Controller
 
     public function export(Request $request, string $report, Exporter $exporter): StreamedResponse
     {
-        $definition = ReportService::catalog()[$report] ?? abort(404);
+        $definition = ReportService::catalogFor($request->user())[$report] ?? abort(404);
         $result = $this->reports->run($report, $request->user(), $this->filters($request));
 
         return $exporter->download($definition['title'].'-'.now()->format('Ymd'), $request->input('format', 'xlsx'), $result['columns'], $result['rows']);

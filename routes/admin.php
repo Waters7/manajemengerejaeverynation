@@ -172,6 +172,29 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::resource('pages', Admin\PageController::class)->except('show');
     });
 
+    // ── STORE ──────────────────────────────────────────────────────
+    Route::middleware('permission:store.manage')->prefix('store')->name('store.')->group(function () {
+        Route::resource('products', Admin\ProductController::class)->except('show');
+        Route::delete('product-images/{image}', [Admin\ProductController::class, 'destroyImage'])->name('products.images.destroy');
+        Route::get('categories', [Admin\ProductCategoryController::class, 'index'])->name('categories.index');
+        Route::post('categories', [Admin\ProductCategoryController::class, 'store'])->name('categories.store');
+        Route::put('categories/{category}', [Admin\ProductCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('categories/{category}', [Admin\ProductCategoryController::class, 'destroy'])->name('categories.destroy');
+        Route::get('settings', [Admin\StoreSettingsController::class, 'edit'])->name('settings.edit');
+        Route::put('settings', [Admin\StoreSettingsController::class, 'update'])->name('settings.update');
+    });
+    Route::middleware('permission:orders.manage')->prefix('orders')->name('orders.')->controller(Admin\OrderController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/export', 'export')->name('export');
+        Route::get('/{order}', 'show')->name('show');
+        Route::post('/{order}/confirm-payment', 'confirmPayment')->name('confirm');
+        Route::post('/{order}/reject-proof', 'rejectProof')->name('reject-proof');
+        Route::patch('/{order}/status', 'status')->name('status');
+        Route::post('/{order}/cancel', 'cancel')->name('cancel');
+        Route::patch('/{order}/notes', 'notes')->name('notes');
+        Route::get('/{order}/proof', 'proof')->name('proof');
+    });
+
     // ── CARE ───────────────────────────────────────────────────────
     Route::middleware('permission:prayer.view')->group(function () {
         Route::get('prayer-requests', [Admin\PrayerRequestController::class, 'index'])->name('prayer-requests.index');

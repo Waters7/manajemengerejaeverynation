@@ -12,6 +12,8 @@ use App\Models\LifeGroup;
 use App\Models\LifeGroupJoinRequest;
 use App\Models\MemberProgramProgress;
 use App\Models\Ministry;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\Profile;
 use App\Models\User;
 use App\Models\VolunteerApplication;
@@ -24,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -62,7 +65,11 @@ class AppServiceProvider extends ServiceProvider
             'ministry' => Ministry::class,
             'discipler_relationship' => DisciplerRelationship::class,
             'leadership_candidate' => LeadershipCandidate::class,
+            'product' => Product::class,
+            'order' => Order::class,
         ]);
+
+        Blade::directive('rupiah', fn (string $expression) => "<?php echo e(\\App\\Services\\Rupiah::format({$expression})); ?>");
 
         // Super Admin passes every ability check (policies still run for other roles).
         Gate::before(fn (User $user) => $user->hasRole(Role::SuperAdmin->value) ? true : null);

@@ -6,6 +6,7 @@ use App\Enums\AttendanceStatus;
 use App\Enums\BaptismStatus;
 use App\Enums\InvolvementStatus;
 use App\Enums\LeadershipStage;
+use App\Enums\OrderStatus;
 use App\Enums\ParticipantStatus;
 use App\Enums\ProgressStatus;
 use App\Enums\RegistrationStatus;
@@ -22,6 +23,7 @@ use App\Models\LifeGroup;
 use App\Models\MemberProgramProgress;
 use App\Models\Ministry;
 use App\Models\Newcomer;
+use App\Models\OrderItem;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -56,7 +58,18 @@ class ReportService
             'campus-ministry' => ['title' => 'Campus Ministry', 'description' => 'Students, LifeGroups and discipleship per campus.', 'filters' => ['campus']],
             'volunteer-participation' => ['title' => 'Volunteer participation', 'description' => 'Volunteers, applications and serving per ministry.', 'filters' => ['date', 'ministry', 'status']],
             'event-attendance' => ['title' => 'Event attendance', 'description' => 'Registrations and check-ins per event.', 'filters' => ['date', 'campus']],
+            'store-sales' => ['title' => 'Store sales', 'description' => 'Books and merchandise sold and paid revenue per product.', 'filters' => ['date'], 'permission' => 'orders.manage'],
         ];
+    }
+
+    /**
+     * Reports this user may open (some reports need an extra permission).
+     *
+     * @return array<string, array{title: string, description: string, filters: list<string>, permission?: string}>
+     */
+    public static function catalogFor(User $user): array
+    {
+        return array_filter(self::catalog(), fn (array $report) => ! isset($report['permission']) || $user->can($report['permission']));
     }
 
     /**
@@ -83,6 +96,7 @@ class ReportService
             'campus-ministry' => $this->campusMinistry($user, $filters),
             'volunteer-participation' => $this->volunteerParticipation($user, $filters, $from, $to),
             'event-attendance' => $this->eventAttendance($user, $filters, $from, $to),
+            'store-sales' => $this->storeSales($from, $to),
             default => abort(404),
         };
     }
@@ -352,6 +366,28 @@ class ReportService
             ]);
 
         return ['columns' => ['Event', 'Date', 'Capacity', 'Registered', 'Waiting list', 'Checked in', 'Show-up %'], 'rows' => $rows, 'bar' => 5];
+    }
+
+    private function storeSales(Carbon $from, Carbon $to): array
+    {
+        $rows = OrderItem::query()
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereBetween('orders.created_at', [$from, $to])
+            ->where('orders.status', '!=', OrderStatus::Cancelled->value)
+            ->selectRaw('order_items.product_name, order_items.variant_name, sum(order_items.quantity) as ordered')
+            ->selectRaw('sum(case when orders.paid_at is not null then order_items.quantity else 0 end) as paid_units')
+            ->selectRaw('sum(case when orders.paid_at is not null then order_items.line_total else 0 end) as revenue')
+            ->groupBy('order_items.product_name', 'order_items.variant_name')
+            ->orderByDesc('revenue')
+            ->get()
+            ->map(fn ($row) => [
+                $row->product_name.($row->variant_name ? ' — '.$row->variant_name : ''),
+                (int) $row->ordered,
+                (int) $row->paid_units,
+                (int) $row->revenue,
+            ]);
+
+        return ['columns' => ['Product', 'Units ordered', 'Units paid', 'Paid revenue (Rp)'], 'rows' => $rows->values(), 'bar' => 3];
     }
 
     // ── Helpers ────────────────────────────────────────────────────

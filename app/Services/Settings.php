@@ -61,6 +61,21 @@ class Settings
                 'wa_template_lifegroup_invite' => ['label' => 'LifeGroup invitation template', 'type' => 'textarea', 'default' => "Hi {nickname}! Selamat bergabung di LifeGroup {lifegroup} 🙌\n\nIni link grup WhatsApp kita: {invite_url}\n\nSampai jumpa di pertemuan berikutnya!"],
                 'wa_template_volunteer' => ['label' => 'Volunteer application template', 'type' => 'textarea', 'default' => "Hi {nickname}! 👋\n\nTerima kasih sudah mendaftar untuk melayani di {ministry}. Saya {sender}, boleh kita atur waktu untuk ngobrol?"],
             ],
+            'store' => [
+                'store_enabled' => ['label' => 'Store open for orders', 'type' => 'toggle', 'default' => '1'],
+                'store_intro' => ['label' => 'Store intro text', 'type' => 'textarea', 'default' => 'Buku pemuridan dan merchandise Every Nation Bekasi. Pesan online, bayar via transfer, lalu ambil di gereja atau kami kirim ke alamatmu.'],
+                'store_bank_accounts' => ['label' => 'Bank accounts / QRIS info (one per line)', 'type' => 'textarea', 'default' => ''],
+                'store_payment_instructions' => ['label' => 'Payment instructions', 'type' => 'textarea', 'default' => 'Transfer sesuai total pesanan, lalu upload bukti transfer di halaman pesanan. Pesanan diproses setelah pembayaran dikonfirmasi oleh tim kami.'],
+                'store_pay_on_pickup' => ['label' => 'Allow pay on pickup', 'type' => 'toggle', 'default' => '1'],
+                'store_pickup_location' => ['label' => 'Pickup location & times', 'type' => 'textarea', 'default' => 'Ambil di meja Store Every Nation Bekasi setiap hari Minggu setelah ibadah.'],
+                'store_delivery_enabled' => ['label' => 'Offer delivery', 'type' => 'toggle', 'default' => '1'],
+                'store_shipping_fee' => ['label' => 'Flat delivery fee (Rp)', 'type' => 'number', 'default' => '20000'],
+                'store_free_shipping_min' => ['label' => 'Free delivery from subtotal (Rp, empty = never)', 'type' => 'number', 'default' => ''],
+                'store_delivery_note' => ['label' => 'Delivery note', 'type' => 'textarea', 'default' => 'Pengiriman ke area Bekasi & sekitarnya. Untuk luar kota, ongkir disesuaikan dan akan dikonfirmasi lewat WhatsApp.'],
+                'store_unpaid_cancel_hours' => ['label' => 'Auto-cancel unpaid transfer orders after (hours, 0 = never)', 'type' => 'number', 'default' => '72'],
+                'store_whatsapp' => ['label' => 'Store WhatsApp (empty = church WhatsApp)', 'default' => ''],
+                'wa_template_order' => ['label' => 'WhatsApp message to customer', 'type' => 'textarea', 'default' => "Halo {name}! 👋\n\nTerima kasih sudah memesan di Every Nation Bekasi Store.\n\nNo. pesanan: {order_number}\nTotal: {total}\nStatus: {status}\n\nDetail pesanan: {order_url}\n\nGod bless!"],
+            ],
         ];
     }
 
@@ -79,6 +94,19 @@ class Settings
         }
 
         return self::defaults()[$key] ?? $default;
+    }
+
+    /** On/off settings are stored as "1" / "0". */
+    public function enabled(string $key): bool
+    {
+        return (string) $this->get($key) === '1';
+    }
+
+    public function integer(string $key): ?int
+    {
+        $value = $this->get($key);
+
+        return is_numeric($value) ? (int) $value : null;
     }
 
     /** @return array<string, string|null> */

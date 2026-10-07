@@ -10,8 +10,10 @@
         ['Sermons', 'sermons.index', 'sermons.*'],
         ['Campus Ministry', 'campus', 'campus'],
         ['Gallery', 'gallery.index', 'gallery.*'],
+        ['Store', 'store.index', 'store.*'],
     ];
     $siteName = $settings->get('site_name');
+    $cartCount = app(\App\Services\CartService::class)->count();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-pt-24">
@@ -56,6 +58,13 @@
             </nav>
 
             <div class="hidden items-center gap-2 xl:flex">
+                <a href="{{ route('store.cart') }}" class="relative rounded-full p-2 transition" aria-label="Keranjang ({{ $cartCount }})"
+                    :class="scrolled || {{ $transparent ? 'false' : 'true' }} ? 'text-slate-700 hover:bg-slate-100 hover:text-brand' : 'text-white hover:bg-white/10'">
+                    <x-icon name="bag" class="size-5" />
+                    @if ($cartCount)
+                        <span class="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-brand px-1 text-[0.65rem] leading-5 font-bold text-white ring-2 ring-white">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+                    @endif
+                </a>
                 <a href="{{ route('get-involved') }}"
                     :class="scrolled || {{ $transparent ? 'false' : 'true' }} ? 'btn-outline' : 'btn-outline-white'"
                     class="btn btn-sm">Get Involved</a>
@@ -73,11 +82,20 @@
                 @endauth
             </div>
 
-            <button type="button" class="rounded-full p-2 xl:hidden" x-on:click="open = !open" aria-label="Toggle menu"
-                :class="scrolled || open || {{ $transparent ? 'false' : 'true' }} ? 'text-ink' : 'text-white'">
-                <x-icon name="menu" class="size-6" x-show="!open" />
-                <x-icon name="x" class="size-6" x-show="open" x-cloak />
-            </button>
+            <div class="flex items-center gap-1 xl:hidden">
+                <a href="{{ route('store.cart') }}" class="relative rounded-full p-2" aria-label="Keranjang ({{ $cartCount }})"
+                    :class="scrolled || open || {{ $transparent ? 'false' : 'true' }} ? 'text-ink' : 'text-white'">
+                    <x-icon name="bag" class="size-6" />
+                    @if ($cartCount)
+                        <span class="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-brand px-1 text-[0.65rem] leading-5 font-bold text-white ring-2 ring-white">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+                    @endif
+                </a>
+                <button type="button" class="rounded-full p-2" x-on:click="open = !open" aria-label="Toggle menu"
+                    :class="scrolled || open || {{ $transparent ? 'false' : 'true' }} ? 'text-ink' : 'text-white'">
+                    <x-icon name="menu" class="size-6" x-show="!open" />
+                    <x-icon name="x" class="size-6" x-show="open" x-cloak />
+                </button>
+            </div>
         </div>
 
         <div x-show="open" x-cloak x-transition.origin.top class="max-h-[calc(100vh-4.5rem)] overflow-y-auto border-t border-line bg-white xl:hidden">
@@ -127,6 +145,7 @@
                             <li><a href="{{ route('get-involved.serve') }}" class="hover:text-white">Serve With Us</a></li>
                             <li><a href="{{ route('prayer.create') }}" class="hover:text-white">Prayer Request</a></li>
                             <li><a href="{{ route('connect') }}" class="hover:text-white">Connect Card</a></li>
+                            <li><a href="{{ route('store.index') }}" class="hover:text-white">Store — Books & Merch</a></li>
                         </ul>
                     </div>
                     <div>

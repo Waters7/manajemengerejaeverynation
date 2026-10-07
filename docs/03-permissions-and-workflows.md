@@ -29,6 +29,8 @@ Legend: **F** full · **S** scoped (own LifeGroup / disciples, own campus, own m
 | `pastoral.view` / `.manage` | F | F | — | — | — | — | — |
 | `certificates.manage` (upload baptism / program certificates) | F | F | S campus | S own group & disciples | — | — | own certificates (read) |
 | `prophecy.manage` (upload / listen to prophetic words) | F | F | — | — | — | — | own recordings (listen) |
+| `store.manage` (products, categories, store settings) | F | F | — | — | — | — | browse & order |
+| `orders.manage` (confirm payments, fulfil, cancel) | F | F | — | — | — | — | own orders (My Orders) |
 | `announcements.manage` | F | F | — | — | — | — | — |
 | `birthdays.view` | F | F | S campus | S own group | S own ministry | — | — |
 | `reports.view` / `reports.export` | F | F | S campus | — | — | — | — |

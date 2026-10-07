@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         }
 
         if (! app()->isProduction() || config('church.seed_demo')) {
-            $this->call(DemoSeeder::class);
+            $this->call([DemoSeeder::class, StoreDemoSeeder::class]);
         }
     }
 }

@@ -50,6 +50,8 @@ class RolesAndPermissionsSeeder extends Seeder
         'pastoral.manage' => 'Manage pastoral care (restricted)',
         'certificates.manage' => 'Upload baptism and program certificates (scoped)',
         'prophecy.manage' => 'Upload and listen to prophetic word recordings (church staff)',
+        'store.manage' => 'Manage store products, categories and store settings',
+        'orders.manage' => 'Process store orders: confirm payments, fulfil and cancel',
         'announcements.manage' => 'Manage announcements',
         'birthdays.view' => 'View birthdays',
         'reports.view' => 'View reports',

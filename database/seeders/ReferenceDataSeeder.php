@@ -11,6 +11,7 @@ use App\Models\EventCategory;
 use App\Models\InvolvementInterest;
 use App\Models\Ministry;
 use App\Models\PastoralCareCategory;
+use App\Models\ProductCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -149,6 +150,10 @@ class ReferenceDataSeeder extends Seeder
 
         foreach (['Prayer', 'Family', 'Marriage', 'Counseling', 'Hospital', 'Bereavement', 'Other'] as $i => $name) {
             PastoralCareCategory::updateOrCreate(['slug' => Str::slug($name)], ['name' => $name, 'is_active' => true, 'sort_order' => $i + 1]);
+        }
+
+        foreach (['Discipleship Books', 'Christian Living', 'Apparel', 'Accessories'] as $i => $name) {
+            ProductCategory::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name, 'is_active' => true, 'sort_order' => $i + 1]);
         }
     }
 }
